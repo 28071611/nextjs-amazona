@@ -67,12 +67,32 @@ const main = async () => {
       } else if (lowerFile.includes('kids') || lowerFile.includes('boy') || lowerFile.includes('girl') || lowerFile.includes('cycle')) {
         category = 'Kids'
         price = 1500
+      } else if (lowerFile.includes('chair') || lowerFile.includes('sofa') || lowerFile.includes('table') || lowerFile.includes('bed') || lowerFile.includes('furniture')) {
+        category = 'Furniture'
+        if (lowerFile.includes('sofa')) price = 25000
+        else if (lowerFile.includes('table')) price = 15000
+        else if (lowerFile.includes('bed')) price = 30000
+        else price = 5000
+      } else if (lowerFile.includes('ball') || lowerFile.includes('bat') || lowerFile.includes('racket') || lowerFile.includes('shoes') || lowerFile.includes('kit') || lowerFile.includes('sports')) {
+        category = 'Sports'
+        if (lowerFile.includes('shoes')) price = 4000
+        else if (lowerFile.includes('bat')) price = 3000
+        else price = 1000
+      } else if (lowerFile.includes('frige') || lowerFile.includes('purifier') || lowerFile.includes('ac') || lowerFile.includes('appliances')) {
+        category = 'Home Appliances'
+        price = 15000
       } else if (lowerFile.includes('neckband') || lowerFile.includes('watch') || lowerFile.includes('glass') || lowerFile.includes('airpod')) {
         category = 'Accessories'
         if (lowerFile.includes('watch')) price = 7000
         else if (lowerFile.includes('airpod')) price = 5000
         else if (lowerFile.includes('neckband')) price = 2500
         else price = 1000
+      }
+
+      // Ensure specific representative images have a later createdAt
+      let createdAt = new Date()
+      if (lowerFile === 'boat neckband.webp' || lowerFile === 'andriod tv.webp') {
+        createdAt = new Date(Date.now() + 1000000) // Future date to ensure it's "latest"
       }
 
       const brands = ['Amaozona', 'Generic', 'Fashion', 'StyleCo']
@@ -98,7 +118,8 @@ const main = async () => {
         numReviews: 10,
         ratingDistribution: [{ rating: 5, count: 5 }, { rating: 4, count: 3 }, { rating: 3, count: 2 }, { rating: 2, count: 0 }, { rating: 1, count: 0 }],
         numSales: 0,
-        reviews: []
+        reviews: [],
+        createdAt: createdAt
       }
     })
 
