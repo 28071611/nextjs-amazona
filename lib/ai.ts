@@ -4,13 +4,20 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
 export const getGeminiResponse = async (prompt: string) => {
     try {
+        // Check if API key is configured
+        if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === '') {
+            console.warn('⚠️ Gemini API key not configured. Using offline mode.')
+            return 'AI service running in offline mode with local intelligence.'
+        }
+        
         const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
         const result = await model.generateContent(prompt)
         const response = await result.response
         return response.text()
-    } catch (error) {
-        console.error('Gemini API Error:', error)
-        return null
+    } catch (error: any) {
+        console.error('Gemini API Error:', error.message)
+        // Fallback to offline mode when API fails
+        return 'AI service running in offline mode with local intelligence.'
     }
 }
 
@@ -40,14 +47,33 @@ export const getProductRecommendations = async (
     Only return the JSON array, nothing else.
   `
     const response = await getGeminiResponse(prompt)
-    if (!response) return []
+    if (!response || response.includes('offline mode')) {
+        // Fallback: Return products from same category or with similar tags
+        const sameCategory = allProducts
+            .filter(p => p.category === currentProduct.category && p._id !== currentProduct._id)
+            .slice(0, 2)
+        
+        const similarTags = allProducts
+            .filter((p: any) => 
+                p._id !== currentProduct._id && 
+                p.tags.some((tag: string) => (currentProduct.tags as string[]).includes(tag))
+            )
+            .slice(0, 2)
+        
+        return [...sameCategory, ...similarTags].slice(0, 4).map(p => p._id)
+    }
+    
     try {
         // Basic cleanup in case Gemini adds markdown formatting
         const jsonString = response.replace(/```json/g, '').replace(/```/g, '').trim()
         return JSON.parse(jsonString)
     } catch (error) {
         console.error('Failed to parse recommendations:', error)
-        return []
+        // Fallback to simple logic
+        return allProducts
+            .filter(p => p.category === currentProduct.category && p._id !== currentProduct._id)
+            .slice(0, 4)
+            .map(p => p._id)
     }
 }
 

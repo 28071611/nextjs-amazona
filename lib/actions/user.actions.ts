@@ -20,20 +20,44 @@ import { getSetting } from './setting.actions'
 // CREATE
 export async function registerUser(userSignUp: IUserSignUp) {
   try {
+    console.log('🧪 Starting user registration:', userSignUp.email);
+    
+    // Validate input
     const user = await UserSignUpSchema.parseAsync({
       name: userSignUp.name,
       email: userSignUp.email,
       password: userSignUp.password,
       confirmPassword: userSignUp.confirmPassword,
     })
+    console.log('✅ Input validation passed');
 
     await connectToDatabase()
-    await User.create({
-      ...user,
-      password: await bcrypt.hash(user.password, 5),
+    console.log('✅ Database connected');
+    
+    // Check if user already exists
+    const existingUser = await User.findOne({ email: user.email })
+    if (existingUser) {
+      console.log('❌ User already exists:', user.email);
+      return { success: false, error: 'User already exists with this email' }
+    }
+    console.log('✅ No duplicate user found');
+
+    // Create user without confirmPassword field
+    const { confirmPassword, ...userData } = user
+    const hashedPassword = await bcrypt.hash(user.password, 5)
+    console.log('✅ Password hashed');
+    
+    const newUser = await User.create({
+      ...userData,
+      password: hashedPassword,
+      role: 'user',
+      emailVerified: false,
     })
+    console.log('✅ User created in database:', newUser._id);
+    
     return { success: true, message: 'User created successfully' }
   } catch (error) {
+    console.error('❌ Registration error:', error);
     return { success: false, error: formatError(error) }
   }
 }
@@ -61,9 +85,9 @@ export async function updateUser(user: z.infer<typeof UserUpdateSchema>) {
     await connectToDatabase()
     const dbUser = await User.findById(user._id)
     if (!dbUser) throw new Error('User not found')
-    dbUser.name = user.name
-    dbUser.email = user.email
-    dbUser.role = user.role
+    dbUser.set('name', user.name)
+    dbUser.set('email', user.email)
+    dbUser.set('role', user.role)
     const updatedUser = await dbUser.save()
     revalidatePath('/admin/users')
     return {
@@ -81,7 +105,7 @@ export async function updateUserName(user: IUserName) {
     const session = await auth()
     const currentUser = await User.findById(session?.user?.id)
     if (!currentUser) throw new Error('User not found')
-    currentUser.name = user.name
+    currentUser.set('name', user.name)
     const updatedUser = await currentUser.save()
     return {
       success: true,
@@ -118,7 +142,7 @@ export async function updateUserEmail(user: z.infer<typeof UserEmailSchema>) {
     const session = await auth()
     const currentUser = await User.findById(session?.user?.id)
     if (!currentUser) throw new Error('User not found')
-    currentUser.email = user.email
+    currentUser.set('email', user.email)
     const updatedUser = await currentUser.save()
     return {
       success: true,
@@ -138,7 +162,7 @@ export async function updateUserPassword(
     const session = await auth()
     const currentUser = await User.findById(session?.user?.id)
     if (!currentUser) throw new Error('User not found')
-    currentUser.password = await bcrypt.hash(user.password, 5)
+    currentUser.set('password', await bcrypt.hash(user.password, 5))
     const updatedUser = await currentUser.save()
     return {
       success: true,
@@ -151,7 +175,17 @@ export async function updateUserPassword(
 }
 
 export async function signInWithCredentials(user: IUserSignIn) {
-  return await signIn('credentials', { ...user, redirect: false })
+  try {
+    const result = await signIn('credentials', {
+      email: user.email,
+      password: user.password,
+      redirect: false,
+    })
+    return result
+  } catch (error) {
+    console.error('Sign in error:', error)
+    throw error
+  }
 }
 export const SignInWithGoogle = async () => {
   await signIn('google')
@@ -175,15 +209,15 @@ export async function getAllUsers({
   limit = limit || pageSize
   await connectToDatabase()
 
-  const skipAmount = (Number(page) - 1) * limit
+  const skipAmount = (Number(page) - 1) * (limit || pageSize)
   const users = await User.find()
     .sort({ createdAt: 'desc' })
     .skip(skipAmount)
-    .limit(limit)
+    .limit(limit || pageSize)
   const usersCount = await User.countDocuments()
   return {
     data: JSON.parse(JSON.stringify(users)) as IUser[],
-    totalPages: Math.ceil(usersCount / limit),
+    totalPages: Math.ceil(usersCount / (limit || pageSize)),
   }
 }
 

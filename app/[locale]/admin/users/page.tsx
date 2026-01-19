@@ -47,7 +47,7 @@ export default async function AdminUser(props: {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users?.data.map((user: IUser) => (
+            {users?.data.map((user: any) => (
               <TableRow key={user._id}>
                 <TableCell>{formatId(user._id)}</TableCell>
                 <TableCell>{user.name}</TableCell>

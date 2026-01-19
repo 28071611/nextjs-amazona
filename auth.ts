@@ -41,26 +41,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { type: 'password' },
       },
       async authorize(credentials) {
-        await connectToDatabase()
-        if (credentials == null) return null
+        try {
+          await connectToDatabase()
+          if (credentials == null) return null
 
-        const user = await User.findOne({ email: credentials.email })
+          console.log('🔍 Looking for user with email:', credentials.email)
+          const user = await User.findOne({ email: credentials.email })
+          console.log('👤 User found:', user ? 'Yes' : 'No')
 
-        if (user && user.password) {
-          const isMatch = await bcrypt.compare(
-            credentials.password as string,
-            user.password
-          )
-          if (isMatch) {
-            return {
-              id: user._id,
-              name: user.name,
-              email: user.email,
-              role: user.role,
+          if (user && (user as any).password) {
+            const isMatch = await bcrypt.compare(
+              credentials.password as string,
+              (user as any).password
+            )
+            console.log('🔐 Password match:', isMatch ? 'Yes' : 'No')
+            
+            if (isMatch) {
+              return {
+                id: user._id,
+                name: (user as any).name,
+                email: (user as any).email,
+                role: (user as any).role,
+              }
             }
           }
+          return null
+        } catch (error) {
+          console.error('❌ Auth error:', error)
+          return null
         }
-        return null
       },
     }),
   ],

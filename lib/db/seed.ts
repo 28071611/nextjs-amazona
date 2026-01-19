@@ -16,6 +16,7 @@ import {
 } from '../utils'
 import WebPage from './models/web-page.model'
 import Setting from './models/setting.model'
+import Coupon from './models/coupon.model'
 import { OrderItem, IOrderInput, ShippingAddress } from '@/types'
 import fs from 'fs'
 import path from 'path'
@@ -163,6 +164,71 @@ const main = async () => {
       )
     }
     await Order.insertMany(orders)
+
+    // Seed coupons
+    await Coupon.deleteMany()
+    const coupons = [
+      {
+        code: 'WELCOME10',
+        type: 'percentage',
+        value: 10,
+        minimumAmount: 50,
+        maximumDiscount: 20,
+        usageLimit: 100,
+        usedCount: 0,
+        isActive: true,
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days from now
+      },
+      {
+        code: 'FLAT25',
+        type: 'fixed',
+        value: 25,
+        minimumAmount: 100,
+        usageLimit: 50,
+        usedCount: 0,
+        isActive: true,
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days from now
+      },
+      {
+        code: 'SAVE50',
+        type: 'percentage',
+        value: 50,
+        minimumAmount: 200,
+        maximumDiscount: 100,
+        usageLimit: 25,
+        usedCount: 0,
+        isActive: true,
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+      },
+      {
+        code: 'NEWUSER',
+        type: 'fixed',
+        value: 15,
+        minimumAmount: 30,
+        usageLimit: 200,
+        usedCount: 0,
+        isActive: true,
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000), // 120 days from now
+      },
+      {
+        code: 'SPECIAL20',
+        type: 'percentage',
+        value: 20,
+        minimumAmount: 75,
+        maximumDiscount: 50,
+        usageLimit: 75,
+        usedCount: 0,
+        isActive: true,
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000), // 45 days from now
+      },
+    ]
+    await Coupon.insertMany(coupons)
+
     console.log('Seeded database successfully')
     process.exit(0)
   } catch (error) {
@@ -221,8 +287,16 @@ const generateOrder = async (
   const order = {
     user: users[i % users.length],
     items: items.map((item) => ({ ...item, product: item.product })),
-    shippingAddress: data.users[i % users.length].address as any,
-    paymentMethod: data.users[i % users.length].paymentMethod,
+    shippingAddress: (data.users[i % users.length]?.address) || {
+      fullName: 'Default User',
+      street: '123 Default St',
+      city: 'Default City',
+      province: 'Default Province',
+      postalCode: '12345',
+      country: 'Default Country',
+      phone: '123-456-7890'
+    },
+    paymentMethod: data.users[i % users.length]?.paymentMethod || 'Credit Card',
     isPaid: true,
     isDelivered: true,
     paidAt: calculatePastDate(i),

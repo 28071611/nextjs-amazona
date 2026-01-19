@@ -122,12 +122,7 @@ export const OrderInputSchema = z.object({
   shippingPrice: Price('Shipping price'),
   taxPrice: Price('Tax price'),
   totalPrice: Price('Total price'),
-  expectedDeliveryDate: z
-    .date()
-    .refine(
-      (value) => value > new Date(),
-      'Expected delivery date must be in the future'
-    ),
+  expectedDeliveryDate: z.date(),
   isDelivered: z.boolean().default(false),
   deliveredAt: z.date().optional(),
   isPaid: z.boolean().default(false),
@@ -181,13 +176,24 @@ export const UserInputSchema = z.object({
     postalCode: z.string().min(1, 'Postal code is required'),
     country: z.string().min(1, 'Country is required'),
     phone: z.string().min(1, 'Phone number is required'),
-  }).optional(),
-})
+  }),
+  addresses: z.array(z.object({
+    fullName: z.string().min(1, 'Full name is required'),
+    street: z.string().min(1, 'Street is required'),
+    city: z.string().min(1, 'City is required'),
+    province: z.string().min(1, 'Province is required'),
+    postalCode: z.string().min(1, 'Postal code is required'),
+    country: z.string().min(1, 'Country is required'),
+    phone: z.string().min(1, 'Phone number is required'),
+    isDefault: z.boolean(),
+  })).optional(),
+}).optional()
 
 export const UserSignInSchema = z.object({
   email: Email,
   password: Password,
 })
+
 export const UserSignUpSchema = UserSignInSchema.extend({
   name: UserName,
   confirmPassword: Password,
@@ -197,6 +203,53 @@ export const UserSignUpSchema = UserSignInSchema.extend({
 })
 export const UserNameSchema = z.object({
   name: UserName,
+})
+
+// Password Reset
+export const ForgotPasswordSchema = z.object({
+  email: Email,
+})
+
+export const ResetPasswordSchema = z.object({
+  token: z.string().min(1, 'Reset token is required'),
+  password: Password,
+  confirmPassword: Password,
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ['confirmPassword'],
+})
+
+// Wishlist
+export const WishlistItemSchema = z.object({
+  productId: MongoId,
+})
+
+export const WishlistSchema = z.object({
+  items: z.array(WishlistItemSchema),
+})
+
+// Coupon
+export const CouponInputSchema = z.object({
+  code: z.string().min(1, 'Coupon code is required'),
+  type: z.enum(['percentage', 'fixed']),
+  value: z.number().min(0, 'Value must be positive'),
+  minimumAmount: z.number().min(0).optional(),
+  maximumDiscount: z.number().min(0).optional(),
+  usageLimit: z.number().min(1).optional(),
+  isActive: z.boolean(),
+  startDate: z.date(),
+  endDate: z.date(),
+  applicableProducts: z.array(MongoId).optional(),
+  applicableCategories: z.array(z.string()).optional(),
+  userUsageLimit: z.number().min(1).optional(),
+})
+
+export const CouponApplySchema = z.object({
+  code: z.string().min(1, 'Coupon code is required'),
+})
+
+export const CouponUpdateSchema = CouponInputSchema.extend({
+  _id: MongoId,
 })
 export const UserEmailSchema = z.object({
   email: Email,

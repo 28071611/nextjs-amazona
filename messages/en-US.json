@@ -31,6 +31,7 @@
     "Help": "Help",
     "Site Menu": "Site Menu",
     "Subtotal": "Subtotal",
+    "Wishlist": "Wishlist",
     "Go to cart": "Go to cart"
   },
   "Home": {
@@ -87,6 +88,7 @@
     "Best Sellers in": "Best Sellers in {name}",
     "Inspired by Your browsing history": "Inspired by Your browsing history",
     "Recently Viewed Products": "Recently Viewed Products",
+    "Recommended for You": "Recommended for You",
     "Title": "Title",
     "Enter title": "Enter title",
     "Comment": "Comment",
@@ -148,6 +150,7 @@
     "& Up": "& Up",
     "Check each product page for other buying options": "Check each product page for other buying options.",
     "No product found": "No product found",
+    "Filter options coming soon": "Filter options coming soon",
     "Next": "Next",
     "Previous": "Previous",
     "Page": "Page"
@@ -188,6 +191,9 @@
     "Pages": "Pages",
     "Carousel": "Carousel",
     "Settings": "Settings",
+    "AI Features": "AI Features",
+    "Fraud Detection": "Fraud Detection",
+    "Dynamic Discounts": "Dynamic Discounts",
     "Dashboard": "Dashboard",
     "Total Revenue": "Total Revenue",
     "View revenue": "View revenue",

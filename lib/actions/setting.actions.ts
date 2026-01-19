@@ -2,29 +2,44 @@
 import { ISettingInput } from '@/types'
 import data from '../data'
 import Setting from '../db/models/setting.model'
-import { connectToDatabase } from '../db'
+import { connectToDatabase } from '@/lib/db'
+import { RedisCache, CACHE_KEYS, CACHE_TTL } from '@/lib/redis'
+import { revalidatePath } from 'next/cache'
 import { formatError } from '../utils'
 import { cookies } from 'next/headers'
 
 const globalForSettings = global as unknown as {
   cachedSettings: ISettingInput | null
 }
+
 export const getNoCachedSetting = async (): Promise<ISettingInput> => {
   await connectToDatabase()
   const setting = await Setting.findOne()
   return JSON.parse(JSON.stringify(setting)) as ISettingInput
 }
 
-export const getSetting = async (): Promise<ISettingInput> => {
-  if (!globalForSettings.cachedSettings) {
-    console.log('hit db')
-    await connectToDatabase()
-    const setting = await Setting.findOne().lean()
-    globalForSettings.cachedSettings = setting
-      ? JSON.parse(JSON.stringify(setting))
-      : data.settings[0]
+export async function getSetting() {
+  try {
+    // Try to get from cache first
+    const cachedSettings = await RedisCache.get(CACHE_KEYS.SETTINGS)
+    
+    if (cachedSettings) {
+      console.log('Settings retrieved from cache')
+      return cachedSettings
+    }
+
+    // If not in cache, fetch from database and cache it
+    const settings = await getNoCachedSetting()
+    
+    // Cache the settings
+    await RedisCache.set(CACHE_KEYS.SETTINGS, settings, CACHE_TTL.SETTINGS)
+    console.log('Settings cached successfully')
+
+    return settings
+  } catch (error) {
+    console.error('Get setting error:', error)
+    return null
   }
-  return globalForSettings.cachedSettings as ISettingInput
 }
 
 export const updateSetting = async (newSetting: ISettingInput) => {
@@ -37,6 +52,10 @@ export const updateSetting = async (newSetting: ISettingInput) => {
     globalForSettings.cachedSettings = JSON.parse(
       JSON.stringify(updatedSetting)
     ) // Update the cache
+    await RedisCache.del(CACHE_KEYS.SETTINGS)
+    await RedisCache.set(CACHE_KEYS.SETTINGS, updatedSetting, CACHE_TTL.SETTINGS)
+    console.log('Settings cached successfully')
+    revalidatePath('/admin/settings')
     return {
       success: true,
       message: 'Setting updated successfully',

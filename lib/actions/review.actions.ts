@@ -121,18 +121,18 @@ export async function getReviews({
   } = await getSetting()
   limit = limit || pageSize
   await connectToDatabase()
-  const skipAmount = (page - 1) * limit
+  const skipAmount = (page - 1) * (limit || pageSize)
   const reviews = await Review.find({ product: productId })
     .populate('user', 'name')
     .sort({
       createdAt: 'desc',
     })
     .skip(skipAmount)
-    .limit(limit)
+    .limit(limit || pageSize)
   const reviewsCount = await Review.countDocuments({ product: productId })
   return {
     data: JSON.parse(JSON.stringify(reviews)) as IReviewDetails[],
-    totalPages: reviewsCount === 0 ? 1 : Math.ceil(reviewsCount / limit),
+    totalPages: reviewsCount === 0 ? 1 : Math.ceil(reviewsCount / (limit || pageSize)),
   }
 }
 export const getReviewByProductId = async ({

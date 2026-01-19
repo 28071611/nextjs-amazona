@@ -1,6 +1,7 @@
 import BrowsingHistoryList from '@/components/shared/browsing-history-list'
 import { HomeCard } from '@/components/shared/home/home-card'
 import { HomeCarousel } from '@/components/shared/home/home-carousel'
+import { PersonalizedProducts } from '@/components/shared/home/personalized-products'
 import ProductSlider from '@/components/shared/product/product-slider'
 import { Card, CardContent } from '@/components/ui/card'
 
@@ -68,6 +69,7 @@ export default async function HomePage() {
   return (
     <>
       <HomeCarousel items={carousels} />
+      <PersonalizedProducts />
       <div className='md:p-4 md:space-y-4 bg-border'>
         <HomeCard cards={cards} />
         <Card className='w-full rounded-none'>

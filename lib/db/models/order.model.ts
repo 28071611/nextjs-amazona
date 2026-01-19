@@ -8,6 +8,27 @@ export interface IOrder extends Document, IOrderInput {
   fraudReason?: string
   createdAt: Date
   updatedAt: Date
+  isPaid: boolean
+  paidAt?: Date
+  isDelivered: boolean
+  deliveredAt?: Date
+  codPayment?: {
+    isPaid: boolean
+    paidAt?: Date
+    paymentMethod: string
+    amount: number
+    collectedBy?: string
+    notes?: string
+  }
+  refunds?: {
+    refundId: string
+    amount: number
+    reason: string
+    status: 'pending' | 'approved' | 'rejected' | 'processed'
+    processedAt?: Date
+    processedBy?: string
+    notes?: string
+  }[]
 }
 
 const orderSchema = new Schema<IOrder>(
@@ -59,6 +80,27 @@ const orderSchema = new Schema<IOrder>(
     isFraudulent: { type: Boolean, default: false },
     fraudRiskScore: { type: Number, default: 0 },
     fraudReason: { type: String },
+    codPayment: {
+      isPaid: { type: Boolean, default: false },
+      paidAt: { type: Date },
+      paymentMethod: { type: String },
+      amount: { type: Number },
+      collectedBy: { type: String },
+      notes: { type: String },
+    },
+    refunds: [{
+      refundId: { type: String, required: true },
+      amount: { type: Number, required: true },
+      reason: { type: String, required: true },
+      status: { 
+        type: String, 
+        enum: ['pending', 'approved', 'rejected', 'processed'], 
+        default: 'pending' 
+      },
+      processedAt: { type: Date },
+      processedBy: { type: String },
+      notes: { type: String },
+    }],
     createdAt: { type: Date, default: Date.now },
   },
   {

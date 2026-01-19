@@ -31,7 +31,8 @@
     "Help": "مساعدة",
     "Site Menu": "قائمة الموقع",
     "Subtotal": "المجموع الفرعي",
-    "Go to cart": "اذهب إلى السلة"
+    "Wishlist": "قائمة الأمنيات",
+    "Go to cart": "الذهاب إلى السلة"
   },
   "Home": {
     "Categories to explore": "فئات للاستكشاف",
@@ -87,6 +88,7 @@
     "Best Sellers in": "الأكثر مبيعًا في {name}",
     "Inspired by Your browsing history": "مستوحى من سجل التصفح الخاص بك",
     "Recently Viewed Products": "المنتجات التي تم عرضها مؤخرًا",
+    "Recommended for You": "موصى به لك",
     "Title": "العنوان",
     "Enter title": "أدخل العنوان",
     "Comment": "تعليق",
@@ -148,6 +150,7 @@
     "& Up": "وما فوق",
     "Check each product page for other buying options": "تحقق من صفحة كل منتج لمعرفة خيارات الشراء الأخرى.",
     "No product found": "لم يتم العثور على منتج",
+    "Filter options coming soon": "خيارات التصفية قريباً",
     "Next": "التالي",
     "Previous": "السابق",
     "Page": "الصفحة"
@@ -189,6 +192,9 @@
     "Pages": "الصفحات",
     "Carousel": "دائري",
     "Settings": "الإعدادات",
+    "AI Features": "ميزات الذكاء الاصطناعي",
+    "Fraud Detection": "كشف الاحتيال",
+    "Dynamic Discounts": "الخصومات الديناميكية",
     "Dashboard": "لوحة التحكم",
     "Total Revenue": "إجمالي الإيرادات",
     "View revenue": "عرض الإيرادات",

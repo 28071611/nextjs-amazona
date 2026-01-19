@@ -12,6 +12,11 @@ const nextConfig: NextConfig = withNextIntl()({
       },
     ],
   },
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['localhost:3001', '127.0.0.1:3001', '127.0.0.1:61963'],
+    },
+  },
 })
 
 export default nextConfig

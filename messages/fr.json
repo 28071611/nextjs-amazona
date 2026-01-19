@@ -31,6 +31,7 @@
     "Help": "Aide",
     "Site Menu": "Menu du site",
     "Subtotal": "Sous-total",
+    "Wishlist": "Liste de souhaits",
     "Go to cart": "Aller au panier"
   },
   "Home": {
@@ -87,6 +88,7 @@
     "Best Sellers in": "Meilleures ventes dans {name}",
     "Inspired by Your browsing history": "Inspiré par votre historique de navigation",
     "Recently Viewed Products": "Produits récemment consultés",
+    "Recommended for You": "Recommandé pour vous",
     "Title": "Titre",
     "Enter title": "Saisir le titre",
     "Comment": "Commentaire",
@@ -148,6 +150,7 @@
     "& Up": "& Plus",
     "Check each product page for other buying options": "Vérifiez chaque page produit pour d'autres options d'achat.",
     "No product found": "Aucun produit trouvé",
+    "Filter options coming soon": "Options de filtrage bientôt disponibles",
     "Next": "Suivant",
     "Previous": "Précédent",
     "Page": "Page"
@@ -183,6 +186,9 @@
     "Pages": "Pages",
     "Carousel": "Carrousel",
     "Settings": "Paramètres",
+    "AI Features": "Fonctionnalités IA",
+    "Fraud Detection": "Détection de fraude",
+    "Dynamic Discounts": "Remises dynamiques",
     "Dashboard": "Tableau de bord",
     "Total Revenue": "Revenu total",
     "View revenue": "Voir les revenus",

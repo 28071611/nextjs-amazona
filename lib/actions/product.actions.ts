@@ -3,6 +3,7 @@
 import { connectToDatabase } from '@/lib/db'
 import Product, { IProduct } from '@/lib/db/models/product.model'
 import { revalidatePath } from 'next/cache'
+import { getCachedProducts, getCachedProductById, getCachedCategories, invalidateProductCache } from './cached-product.actions'
 import { formatError } from '../utils'
 import { ProductInputSchema, ProductUpdateSchema } from '../validator'
 import { IProductInput } from '@/types'
@@ -17,11 +18,14 @@ export async function createProduct(data: IProductInput) {
     await connectToDatabase()
     await Product.create(product)
     revalidatePath('/admin/products')
+    // Invalidate cache after creating
+    await invalidateProductCache()
     return {
       success: true,
       message: 'Product created successfully',
     }
   } catch (error) {
+    console.error('Create product error:', error)
     return { success: false, message: formatError(error) }
   }
 }
@@ -33,14 +37,18 @@ export async function updateProduct(data: z.infer<typeof ProductUpdateSchema>) {
     await connectToDatabase()
     await Product.findByIdAndUpdate(product._id, product)
     revalidatePath('/admin/products')
+    // Invalidate cache after updating
+    await invalidateProductCache()
     return {
       success: true,
       message: 'Product updated successfully',
     }
   } catch (error) {
+    console.error('Update product error:', error)
     return { success: false, message: formatError(error) }
   }
 }
+
 // DELETE
 export async function deleteProduct(id: string) {
   try {
@@ -48,14 +56,18 @@ export async function deleteProduct(id: string) {
     const res = await Product.findByIdAndDelete(id)
     if (!res) throw new Error('Product not found')
     revalidatePath('/admin/products')
+    // Invalidate cache after deleting
+    await invalidateProductCache()
     return {
       success: true,
       message: 'Product deleted successfully',
     }
   } catch (error) {
+    console.error('Delete product error:', error)
     return { success: false, message: formatError(error) }
   }
 }
+
 // GET ONE PRODUCT BY ID
 export async function getProductById(productId: string) {
   await connectToDatabase()
@@ -101,12 +113,13 @@ export async function getAllProductsForAdmin({
           : sort === 'avg-customer-review'
             ? { avgRating: -1 }
             : { _id: -1 }
+  const limitValue = limit || 10
   const products = await Product.find({
     ...queryFilter,
   })
     .sort(order)
-    .skip(limit * (Number(page) - 1))
-    .limit(limit)
+    .skip(limitValue * (Number(page) - 1))
+    .limit(limitValue)
     .lean()
 
   const countProducts = await Product.countDocuments({
@@ -114,10 +127,10 @@ export async function getAllProductsForAdmin({
   })
   return {
     products: JSON.parse(JSON.stringify(products)) as IProduct[],
-    totalPages: Math.ceil(countProducts / pageSize),
+    totalPages: Math.ceil(countProducts / limitValue),
     totalProducts: countProducts,
-    from: pageSize * (Number(page) - 1) + 1,
-    to: pageSize * (Number(page) - 1) + products.length,
+    from: limitValue * (Number(page) - 1) + 1,
+    to: limitValue * (Number(page) - 1) + products.length,
   }
 }
 
@@ -313,6 +326,7 @@ export async function getAllProducts({
             ? { avgRating: -1 }
             : { _id: -1 }
   const isPublished = { isPublished: true }
+  const limitValue = limit || 10
   const products = await Product.find({
     ...isPublished,
     ...queryFilter,
@@ -322,8 +336,8 @@ export async function getAllProducts({
     ...ratingFilter,
   })
     .sort(order)
-    .skip(limit * (Number(page) - 1))
-    .limit(limit)
+    .skip(limitValue * (Number(page) - 1))
+    .limit(limitValue)
     .lean()
 
   const countProducts = await Product.countDocuments({
@@ -335,10 +349,10 @@ export async function getAllProducts({
   })
   return {
     products: JSON.parse(JSON.stringify(products)) as IProduct[],
-    totalPages: Math.ceil(countProducts / limit),
+    totalPages: Math.ceil(countProducts / limitValue),
     totalProducts: countProducts,
-    from: limit * (Number(page) - 1) + 1,
-    to: limit * (Number(page) - 1) + products.length,
+    from: limitValue * (Number(page) - 1) + 1,
+    to: limitValue * (Number(page) - 1) + products.length,
   }
 }
 

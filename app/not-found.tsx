@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
 
 export default function NotFound() {
     return (
@@ -11,12 +12,12 @@ export default function NotFound() {
                     <p className='text-gray-600 mb-6'>
                         The page you are looking for does not exist or has been moved.
                     </p>
-                    <a
+                    <Link
                         href='/'
                         className='inline-block px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors'
                     >
                         Back to home
-                    </a>
+                    </Link>
                 </div>
             </body>
         </html>

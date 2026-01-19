@@ -77,8 +77,7 @@ export default function ReviewList({
       const res = await getReviews({ productId: product._id, page: 1 })
       setReviews([...res.data])
       setTotalPages(res.totalPages)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err) {
+      } catch (err) {
       toast({
         variant: 'destructive',
         description: t('Error in fetching reviews'),

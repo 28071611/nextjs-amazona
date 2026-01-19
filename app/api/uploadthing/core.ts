@@ -13,13 +13,17 @@ export const ourFileRouter = {
       // This code runs on your server before upload
       const session = await auth()
 
+      // Check if UploadThing is configured
+      if (!process.env.UPLOADTHING_TOKEN || process.env.UPLOADTHING_TOKEN === '') {
+        throw new UploadThingError('UploadThing is not configured. Please add UPLOADTHING_TOKEN to your environment variables.')
+      }
+
       // If you throw, the user will not be able to upload
       if (!session) throw new UploadThingError('Unauthorized')
 
       // Whatever is returned here is accessible in onUploadComplete as `metadata`
       return { userId: session?.user?.id }
     })
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     .onUploadComplete(async ({ metadata, file }) => {
       // This code RUNS ON YOUR SERVER after upload
 

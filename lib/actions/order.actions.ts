@@ -15,6 +15,7 @@ import User from '../db/models/user.model'
 import mongoose from 'mongoose'
 import { getSetting } from './setting.actions'
 import { detectFraud } from '../ai'
+import { emailService } from '../email-service'
 
 // CREATE
 export const createOrder = async (clientSideCart: Cart) => {
@@ -33,8 +34,41 @@ export const createOrder = async (clientSideCart: Cart) => {
       'user',
       'name email'
     )
-    if (orderWithUser && orderWithUser.user && (orderWithUser.user as any).email) {
-      await sendPurchaseReceipt({ order: orderWithUser })
+
+    // Send order confirmation email
+    const userForEmail = (orderWithUser?.user as any) || null
+    if (userForEmail?.email) {
+      const userName = userForEmail?.name || ''
+      await emailService.sendOrderConfirmation({
+        customerName: userName,
+        orderNumber: createdOrder._id.toString().slice(-6),
+        orderTotal: createdOrder.totalPrice.toFixed(2),
+        items: createdOrder.items.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+      })
+    }
+
+    // Send order shipped notification
+    if (createdOrder.isPaid && !createdOrder.isDelivered && userForEmail?.email) {
+      const userName = userForEmail?.name || ''
+      const trackingNumber = `TRK${Math.random().toString(36).slice(2, 8)}`
+      await emailService.sendOrderShipped({
+        customerName: userName,
+        orderNumber: createdOrder._id.toString().slice(-6),
+        trackingNumber,
+      })
+    }
+
+    // Send order delivered notification
+    if (createdOrder.isPaid && createdOrder.isDelivered && userForEmail?.email) {
+      const userName = userForEmail?.name || ''
+      await emailService.sendOrderDelivered({
+        customerName: userName,
+        orderNumber: createdOrder._id.toString().slice(-6),
+      })
     }
 
     return {
@@ -87,18 +121,41 @@ export async function updateOrderToPaid(orderId: string) {
     const order = await Order.findById(orderId).populate<{
       user: { email: string; name: string }
     }>('user', 'name email')
-    if (!order) throw new Error('Order not found')
-    if (order.isPaid) throw new Error('Order is already paid')
+    
+    if (!order) {
+      throw new Error('Order not found')
+    }
+    
+    if (order.isPaid) {
+      throw new Error('Order is already paid')
+    }
+    
     order.isPaid = true
     order.paidAt = new Date()
     await order.save()
-    if (!process.env.MONGODB_URI?.startsWith('mongodb://localhost'))
-      await updateProductStock(order._id)
-    if (order.user.email) await sendPurchaseReceipt({ order })
+    
+    // Send payment confirmation email
+    const orderWithUser = await Order.findById(orderId).populate(
+      'user',
+      'name email'
+    )
+    
+    if (orderWithUser && orderWithUser.user && (orderWithUser.user as any).email) {
+      const userName = (orderWithUser.user as any)?.name || ''
+      await emailService.sendOrderConfirmation({
+        customerName: userName,
+        orderNumber: order._id.toString().slice(-6),
+        orderTotal: order.totalPrice.toFixed(2),
+        items: order.items,
+      })
+    }
+    
     revalidatePath(`/account/orders/${orderId}`)
-    return { success: true, message: 'Order paid successfully' }
-  } catch (err) {
-    return { success: false, message: formatError(err) }
+    
+    return { success: true, message: 'Order marked as paid successfully' }
+  } catch (error) {
+    console.error('Update order to paid error:', error)
+    return { success: false, message: 'Failed to update order' }
   }
 }
 const updateProductStock = async (orderId: string) => {
@@ -171,7 +228,6 @@ export async function deleteOrder(id: string) {
 }
 
 // GET ALL ORDERS
-
 export async function getAllOrders({
   limit,
   page,
@@ -182,20 +238,22 @@ export async function getAllOrders({
   const {
     common: { pageSize },
   } = await getSetting()
-  limit = limit || pageSize
+  const limitValue = limit || pageSize
   await connectToDatabase()
-  const skipAmount = (Number(page) - 1) * limit
+  const skipAmount = (Number(page) - 1) * limitValue
   const orders = await Order.find()
     .populate('user', 'name')
     .sort({ createdAt: 'desc' })
     .skip(skipAmount)
-    .limit(limit)
+    .limit(limitValue)
   const ordersCount = await Order.countDocuments()
+
   return {
     data: JSON.parse(JSON.stringify(orders)) as IOrderList[],
-    totalPages: Math.ceil(ordersCount / limit),
+    totalPages: Math.ceil(ordersCount / limitValue),
   }
 }
+
 export async function getMyOrders({
   limit,
   page,
@@ -206,24 +264,24 @@ export async function getMyOrders({
   const {
     common: { pageSize },
   } = await getSetting()
-  limit = limit || pageSize
+  const limitValue = limit || pageSize
   await connectToDatabase()
   const session = await auth()
   if (!session) {
     throw new Error('User is not authenticated')
   }
-  const skipAmount = (Number(page) - 1) * limit
+  const skipAmount = (Number(page) - 1) * limitValue
   const orders = await Order.find({
     user: session?.user?.id,
   })
     .sort({ createdAt: 'desc' })
     .skip(skipAmount)
-    .limit(limit)
+    .limit(limitValue)
   const ordersCount = await Order.countDocuments({ user: session?.user?.id })
 
   return {
     data: JSON.parse(JSON.stringify(orders)),
-    totalPages: Math.ceil(ordersCount / limit),
+    totalPages: Math.ceil(ordersCount / limitValue),
   }
 }
 export async function getOrderById(orderId: string): Promise<IOrder> {
@@ -420,7 +478,7 @@ export async function getOrderSummary(date: DateRange) {
   const {
     common: { pageSize },
   } = await getSetting()
-  const limit = pageSize
+  const limit = pageSize ?? 10
   const latestOrders = await Order.find()
     .populate('user', 'name')
     .sort({ createdAt: 'desc' })
@@ -470,7 +528,7 @@ async function getSalesChartData(date: DateRange) {
             { $toString: '$_id.day' },
           ],
         },
-        totalSales: 1,
+        totalSales: '$totalSales',
       },
     },
     { $sort: { date: 1 } },

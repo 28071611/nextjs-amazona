@@ -39,6 +39,7 @@ import Link from 'next/link'
 import useCartStore from '@/hooks/use-cart-store'
 import useSettingStore from '@/hooks/use-setting-store'
 import ProductPrice from '@/components/shared/product/product-price'
+import CouponInput from '@/components/shared/checkout/coupon-input'
 
 const shippingAddressDefaultValues =
   process.env.NODE_ENV === 'development'
@@ -92,6 +93,8 @@ const CheckoutForm = () => {
     setDeliveryDateIndex,
   } = useCartStore()
   const isMounted = useIsMounted()
+  const [couponDiscount, setCouponDiscount] = useState(0)
+  const [couponCode, setCouponCode] = useState('')
 
   const shippingAddressForm = useForm<ShippingAddress>({
     resolver: zodResolver(ShippingAddressSchema),
@@ -100,6 +103,11 @@ const CheckoutForm = () => {
   const onSubmitShippingAddress: SubmitHandler<ShippingAddress> = (values) => {
     setShippingAddress(values)
     setIsAddressSelected(true)
+  }
+
+  const handleCouponApplied = (discount: number, code: string) => {
+    setCouponDiscount(discount)
+    setCouponCode(code)
   }
 
   useEffect(() => {
@@ -200,45 +208,10 @@ const CheckoutForm = () => {
           </div>
         )}
 
-        <div>
-          <div className='text-lg font-bold'>Order Summary</div>
-          <div className='space-y-2'>
-            <div className='flex justify-between'>
-              <span>Items:</span>
-              <span>
-                <ProductPrice price={itemsPrice} plain />
-              </span>
-            </div>
-            <div className='flex justify-between'>
-              <span>Shipping & Handling:</span>
-              <span>
-                {shippingPrice === undefined ? (
-                  '--'
-                ) : shippingPrice === 0 ? (
-                  'FREE'
-                ) : (
-                  <ProductPrice price={shippingPrice} plain />
-                )}
-              </span>
-            </div>
-            <div className='flex justify-between'>
-              <span> Tax:</span>
-              <span>
-                {taxPrice === undefined ? (
-                  '--'
-                ) : (
-                  <ProductPrice price={taxPrice} plain />
-                )}
-              </span>
-            </div>
-            <div className='flex justify-between  pt-4 font-bold text-lg'>
-              <span> Order Total:</span>
-              <span>
-                <ProductPrice price={totalPrice} plain />
-              </span>
-            </div>
-          </div>
-        </div>
+        <CouponInput 
+          onCouponApplied={handleCouponApplied} 
+          orderAmount={itemsPrice || 0} 
+        />
       </CardContent>
     </Card>
   )
@@ -689,7 +662,7 @@ const CheckoutForm = () => {
                   </Button>
                   <div className='flex-1'>
                     <p className='font-bold text-lg'>
-                      Order Total: <ProductPrice price={totalPrice} plain />
+                      Order Total: <ProductPrice price={Math.max(0, (totalPrice || 0) - couponDiscount)} plain />
                     </p>
                     <p className='text-xs'>
                       {' '}

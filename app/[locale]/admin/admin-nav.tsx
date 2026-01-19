@@ -28,8 +28,16 @@ const links = [
     href: '/admin/web-pages',
   },
   {
-    title: 'Predictions',
+    title: 'AI Features',
     href: '/admin/predictions',
+  },
+  {
+    title: 'Fraud Detection',
+    href: '/admin/fraud-detection',
+  },
+  {
+    title: 'Dynamic Discounts',
+    href: '/admin/dynamic-discount',
   },
   {
     title: 'Settings',

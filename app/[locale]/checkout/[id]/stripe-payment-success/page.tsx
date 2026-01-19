@@ -5,7 +5,15 @@ import Stripe from 'stripe'
 import { Button } from '@/components/ui/button'
 import { getOrderById } from '@/lib/actions/order.actions'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string)
+let stripe: Stripe | null = null
+
+try {
+  if (process.env.STRIPE_SECRET_KEY) {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+  }
+} catch (error) {
+  console.log('⚠️ Failed to initialize Stripe:', error)
+}
 
 export default async function SuccessPage(props: {
   params: Promise<{
@@ -13,6 +21,17 @@ export default async function SuccessPage(props: {
   }>
   searchParams: Promise<{ payment_intent: string }>
 }) {
+  if (!stripe) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <h1 className="text-2xl font-bold mb-4">Payment Service Unavailable</h1>
+        <p className="text-gray-600 mb-4">Stripe payment service is not configured.</p>
+        <Link href="/">
+          <Button>Return to Home</Button>
+        </Link>
+      </div>
+    )
+  }
   const params = await props.params
 
   const { id } = params

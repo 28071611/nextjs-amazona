@@ -10,21 +10,29 @@ import { formatNumber, generateId, round2 } from '@/lib/utils'
 import ProductPrice from './product-price'
 import ImageHover from './image-hover'
 import AddToCart from './add-to-cart'
+import AddToWishlist from './add-to-wishlist'
 
 const ProductCard = ({
   product,
   hideBorder = false,
   hideDetails = false,
   hideAddToCart = false,
+  hideWishlist = false,
 }: {
   product: IProduct
   hideDetails?: boolean
   hideBorder?: boolean
   hideAddToCart?: boolean
+  hideWishlist?: boolean
 }) => {
   const ProductImage = () => (
     <Link href={`/product/${product.slug}`}>
       <div className='relative h-52'>
+        {!hideWishlist && (
+          <div className='absolute top-2 right-2 z-10'>
+            <AddToWishlist product={product} />
+          </div>
+        )}
         {product.images.length > 1 ? (
           <ImageHover
             src={product.images[0]}

@@ -1,0 +1,34 @@
+# App Configuration
+NEXT_PUBLIC_APP_NAME=Amazona
+NEXT_PUBLIC_APP_DESCRIPTION=An Amazon clone built with Next.js, MongoDB, Shadcn
+NEXT_PUBLIC_SERVER_URL=http://localhost:3001
+
+# MongoDB Atlas Connection - Replace YOUR_PASSWORD with actual password
+MONGODB_URI=mongodb+srv://harishpblr2007_db_user:YOUR_PASSWORD@cluster0.yaga33w.mongodb.net/?appName=Cluster0
+
+# Authentication (REQUIRED)
+AUTH_SECRET=super-secret-key-change-in-production-12345
+
+# AI Configuration (Required for AI features)
+GEMINI_API_KEY=your-gemini-api-key-here
+
+# Google OAuth (Optional)
+AUTH_GOOGLE_ID=
+AUTH_GOOGLE_SECRET=
+
+# Email Configuration (Optional)
+RESEND_API_KEY=
+SENDER_EMAIL=
+
+# File Upload (Optional)
+UPLOADTHING_TOKEN=
+
+# Payment Configuration (Optional)
+PAYPAL_API_URL=https://api-m.sandbox.paypal.com
+PAYPAL_CLIENT_ID=
+PAYPAL_APP_SECRET=
+
+# Stripe Payment (Optional)
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=

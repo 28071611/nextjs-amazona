@@ -4,14 +4,39 @@ import Stripe from 'stripe'
 import { sendPurchaseReceipt } from '@/emails'
 import Order from '@/lib/db/models/order.model'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string)
+let stripe: Stripe | null = null
+
+try {
+  if (process.env.STRIPE_SECRET_KEY) {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+  } else {
+    console.log('⚠️ STRIPE_SECRET_KEY not found, Stripe webhooks disabled')
+  }
+} catch (error) {
+  console.log('⚠️ Failed to initialize Stripe:', error)
+}
 
 export async function POST(req: NextRequest) {
-  const event = await stripe.webhooks.constructEvent(
-    await req.text(),
-    req.headers.get('stripe-signature') as string,
-    process.env.STRIPE_WEBHOOK_SECRET as string
-  )
+  if (!stripe) {
+    return NextResponse.json(
+      { error: 'Stripe service disabled' },
+      { status: 503 }
+    )
+  }
+
+  if (!process.env.STRIPE_WEBHOOK_SECRET) {
+    return NextResponse.json(
+      { error: 'Stripe webhook secret not configured' },
+      { status: 500 }
+    )
+  }
+
+  try {
+    const event = await stripe.webhooks.constructEvent(
+      await req.text(),
+      req.headers.get('stripe-signature') as string,
+      process.env.STRIPE_WEBHOOK_SECRET as string
+    )
 
   if (event.type === 'charge.succeeded') {
     const charge = event.data.object
@@ -42,4 +67,11 @@ export async function POST(req: NextRequest) {
     })
   }
   return new NextResponse()
+  } catch (error) {
+    console.error('Stripe webhook error:', error)
+    return NextResponse.json(
+      { error: 'Webhook handler failed' },
+      { status: 500 }
+    )
+  }
 }

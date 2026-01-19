@@ -49,18 +49,21 @@ export default function CredentialsSignInForm() {
 
   const onSubmit = async (data: IUserSignIn) => {
     try {
-      await signInWithCredentials({
+      console.log('🔐 Attempting sign in with:', data.email)
+      const result = await signInWithCredentials({
         email: data.email,
         password: data.password,
       })
+      console.log('✅ Sign in result:', result)
       redirect(callbackUrl)
     } catch (error) {
       if (isRedirectError(error)) {
         throw error
       }
+      console.error('❌ Sign in error:', error)
       toast({
         title: 'Error',
-        description: 'Invalid email or password',
+        description: error instanceof Error ? error.message : 'Invalid email or password',
         variant: 'destructive',
       })
     }
@@ -105,6 +108,11 @@ export default function CredentialsSignInForm() {
 
           <div>
             <Button type='submit'>Sign In</Button>
+          </div>
+          <div className='text-center'>
+            <Link href='/forgot-password' className='text-sm text-blue-600 hover:text-blue-500'>
+              Forgot your password?
+            </Link>
           </div>
           <div className='text-sm'>
             By signing in, you agree to {site.name}&apos;s{' '}
