@@ -15,7 +15,6 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useTranslations } from 'next-intl'
 import { ICarousel } from '@/types'
-
 export function HomeCarousel({ items }: { items: ICarousel[] }) {
   const plugin = React.useRef(
     Autoplay({ delay: 3000, stopOnInteraction: true })
