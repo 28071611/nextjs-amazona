@@ -35,7 +35,7 @@ export default function AddToCart({
 
   return minimal ? (
     <Button
-      className='rounded-full w-auto'
+      className='elite-button rounded-full w-full text-xs'
       onClick={() => {
         try {
           addItem(item, 1)
@@ -43,6 +43,7 @@ export default function AddToCart({
             description: t('Product.Added to Cart'),
             action: (
               <Button
+                className='elite-button text-xs'
                 onClick={() => {
                   router.push('/cart')
                 }}
@@ -82,7 +83,7 @@ export default function AddToCart({
       </Select>
 
       <Button
-        className='rounded-full w-full'
+        className='elite-button rounded-full w-full'
         type='button'
         onClick={async () => {
           try {
@@ -111,7 +112,7 @@ export default function AddToCart({
             })
           }
         }}
-        className='w-full rounded-full '
+        className='elite-button w-full rounded-full'
       >
         {t('Product.Buy Now')}
       </Button>

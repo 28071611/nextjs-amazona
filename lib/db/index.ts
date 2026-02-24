@@ -1,13 +1,7 @@
 import mongoose from 'mongoose'
 
-const globalWithMongoose = global as typeof globalThis & {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  mongoose?: any
-}
-
-const cached = globalWithMongoose.mongoose || { conn: null, promise: null }
-
-globalWithMongoose.mongoose = cached
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const cached = (global as any).mongoose || { conn: null, promise: null }
 
 export const connectToDatabase = async (
   MONGODB_URI = process.env.MONGODB_URI
@@ -16,9 +10,20 @@ export const connectToDatabase = async (
 
   if (!MONGODB_URI) throw new Error('MONGODB_URI is missing')
 
-  cached.promise = cached.promise || mongoose.connect(MONGODB_URI)
+  cached.promise = cached.promise || mongoose.connect(MONGODB_URI, {
+    dbName: 'nextjs-amazona',
+    bufferCommands: false,
+  })
 
-  cached.conn = await cached.promise
+  try {
+    cached.conn = await cached.promise
+    console.log('✅ Connected to MongoDB')
+  } catch (error) {
+    console.error('❌ Failed to connect to MongoDB:', error)
+    throw error
+  }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (global as any).mongoose = cached
   return cached.conn
 }

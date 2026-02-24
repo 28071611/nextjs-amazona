@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { X, Filter, Star } from 'lucide-react'
-import { getAllCategories, getAllTags } from '@/lib/actions/product.actions'
+import { getAllCategories, getAllTags, getAllBrands } from '@/lib/actions/product.actions'
 import { getFilterUrl } from '@/lib/utils'
 
 interface AdvancedSearchFiltersProps {
@@ -25,8 +25,8 @@ interface AdvancedSearchFiltersProps {
     brand?: string
     price?: string
     rating?: string
-    minPrice?: number
-    maxPrice?: number
+    minPrice?: string
+    maxPrice?: string
     inStock?: boolean
     freeShipping?: boolean
   }
@@ -40,23 +40,21 @@ export default function AdvancedSearchFilters({
   const [categories, setCategories] = useState<string[]>([])
   const [tags, setTags] = useState<string[]>([])
   const [brands, setBrands] = useState<string[]>([])
-  const [priceRange, setPriceRange] = useState([0, 1000])
+  const [priceRange, setPriceRange] = useState([0, 30000])
   const [selectedRating, setSelectedRating] = useState(0)
   const [inStockOnly, setInStockOnly] = useState(false)
   const [freeShippingOnly, setFreeShippingOnly] = useState(false)
 
   useEffect(() => {
     const loadFilters = async () => {
-      const [categoriesData, tagsData] = await Promise.all([
+      const [categoriesData, tagsData, brandsData] = await Promise.all([
         getAllCategories(),
-        getAllTags()
+        getAllTags(),
+        getAllBrands()
       ])
       setCategories(categoriesData)
       setTags(tagsData)
-      
-      // Extract unique brands from products (this would typically come from an API call)
-      const uniqueBrands = ['Apple', 'Samsung', 'Nike', 'Adidas', 'Sony', 'LG', 'Dell', 'HP', 'Canon', 'Nikon']
-      setBrands(uniqueBrands)
+      setBrands(brandsData)
     }
     
     loadFilters()
@@ -67,7 +65,7 @@ export default function AdvancedSearchFilters({
       ...searchParams,
     }
 
-    if (priceRange[0] > 0 || priceRange[1] < 1000) {
+    if (priceRange[0] > 0 || priceRange[1] < 30000) {
       filters.minPrice = priceRange[0]
       filters.maxPrice = priceRange[1]
     }
@@ -88,7 +86,7 @@ export default function AdvancedSearchFilters({
   }
 
   const clearFilters = () => {
-    setPriceRange([0, 1000])
+    setPriceRange([0, 30000])
     setSelectedRating(0)
     setInStockOnly(false)
     setFreeShippingOnly(false)
@@ -105,59 +103,58 @@ export default function AdvancedSearchFilters({
   }
 
   const activeFiltersCount = [
-    priceRange[0] > 0 || priceRange[1] < 1000,
+    priceRange[0] > 0 || priceRange[1] < 30000,
     selectedRating > 0,
     inStockOnly,
     freeShippingOnly
   ].filter(Boolean).length
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-lg">Advanced Filters</CardTitle>
-          <div className="flex items-center gap-2">
-            {activeFiltersCount > 0 && (
-              <Badge variant="secondary">
-                {activeFiltersCount} active
-              </Badge>
-            )}
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={clearFilters}
-            >
-              <X className="h-4 w-4 mr-2" />
-              Clear All
-            </Button>
-          </div>
+    <div className='elite-card elite-shadow-hover p-6'>
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="h3-bold elite-heading font-light tracking-tight">Advanced Filters</h3>
+        <div className="flex items-center gap-3">
+          {activeFiltersCount > 0 && (
+            <Badge className="bg-primary/20 text-primary border-primary/30 font-light">
+              {activeFiltersCount} active
+            </Badge>
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={clearFilters}
+            className="border-border/50 hover:border-primary/30 font-light"
+          >
+            <X className="h-4 w-4 mr-2" />
+            Clear All
+          </Button>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Price Range */}
+      </div>
+      
+      <div className="space-y-8">
+        {/* Category Filter */}
         <div>
-          <h4 className="font-medium mb-3">Price Range</h4>
-          <div className="px-2">
-            <Slider
-              value={priceRange}
-              onValueChange={setPriceRange}
-              max={1000}
-              min={0}
-              step={10}
-              className="w-full"
-            />
-            <div className="flex justify-between text-sm text-gray-600 mt-2">
-              <span>${priceRange[0]}</span>
-              <span>${priceRange[1]}</span>
-            </div>
-          </div>
+          <h4 className="font-light text-sm tracking-wider uppercase text-foreground/80 mb-4">Category</h4>
+          <Select onValueChange={(value) => onFiltersChange({ ...searchParams, category: value })}>
+            <SelectTrigger className="border-border/50 focus:border-primary/30">
+              <SelectValue placeholder="All categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All categories</SelectItem>
+              {categories.map((category) => (
+                <SelectItem key={category} value={category}>
+                  {category}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Brand Filter */}
         <div>
-          <h4 className="font-medium mb-3">Brand</h4>
+          <h4 className="font-light text-sm tracking-wider uppercase text-foreground/80 mb-4">Brand</h4>
           <Select onValueChange={(value) => onFiltersChange({ ...searchParams, brand: value })}>
-            <SelectTrigger>
+            <SelectTrigger className="border-border/50 focus:border-primary/30">
               <SelectValue placeholder="All brands" />
             </SelectTrigger>
             <SelectContent>
@@ -171,19 +168,52 @@ export default function AdvancedSearchFilters({
           </Select>
         </div>
 
+        {/* Price Range */}
+        <div>
+          <h4 className="font-light text-sm tracking-wider uppercase text-foreground/80 mb-4">Price Range</h4>
+          <div className="px-2">
+            <Slider
+              value={priceRange}
+              onValueChange={setPriceRange}
+              max={30000}
+              min={0}
+              step={500}
+              className="w-full"
+            />
+            <div className="flex justify-between text-sm font-light text-foreground/60 mt-3">
+              <span>₹{priceRange[0].toLocaleString('en-IN')}</span>
+              <span>₹{priceRange[1].toLocaleString('en-IN')}</span>
+            </div>
+          </div>
+        </div>
+
         {/* Rating Filter */}
         <div>
-          <h4 className="font-medium mb-3">Customer Rating</h4>
-          <div className="space-y-2">
-            {[4, 3, 2, 1].map((rating) => (
-              <div key={rating} className="flex items-center space-x-2">
+          <h4 className="font-light text-sm tracking-wider uppercase text-foreground/80 mb-4">Customer Rating</h4>
+          <div className="space-y-3">
+            {[5, 4, 3, 2, 1].map((rating) => (
+              <div key={rating} className="flex items-center space-x-3">
                 <Checkbox
                   checked={selectedRating === rating}
                   onCheckedChange={() => setSelectedRating(selectedRating === rating ? 0 : rating)}
+                  className="border-border/50 data-checked:border-primary data-checked:bg-primary"
                 />
-                <div className="flex items-center">
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  <span className="text-sm">& Up</span>
+                <div className="flex items-center gap-2">
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${
+                          i < rating
+                            ? 'fill-primary text-primary'
+                            : 'text-primary/20'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm font-light text-foreground/80">
+                    {rating === 5 ? '5 Stars' : `${rating} Stars & Up`}
+                  </span>
                 </div>
               </div>
             ))}
@@ -192,35 +222,33 @@ export default function AdvancedSearchFilters({
 
         {/* Stock & Shipping Filters */}
         <div className="space-y-4">
-          <h4 className="font-medium mb-3">Availability</h4>
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
+          <h4 className="font-light text-sm tracking-wider uppercase text-foreground/80 mb-4">Availability</h4>
+          <div className="space-y-3">
+            <div className="flex items-center space-x-3">
+              <Checkbox
                 checked={inStockOnly}
-                onChange={(e) => setInStockOnly(e.target.checked)}
-                className="rounded border-gray-300"
+                onCheckedChange={(checked) => setInStockOnly(checked as boolean)}
+                className="border-border/50 data-checked:border-primary data-checked:bg-primary"
               />
-              <span className="text-sm">In Stock Only</span>
+              <span className="text-sm font-light text-foreground/80">In Stock Only</span>
             </div>
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
+            <div className="flex items-center space-x-3">
+              <Checkbox
                 checked={freeShippingOnly}
-                onChange={(e) => setFreeShippingOnly(e.target.checked)}
-                className="rounded border-gray-300"
+                onCheckedChange={(checked) => setFreeShippingOnly(checked as boolean)}
+                className="border-border/50 data-checked:border-primary data-checked:bg-primary"
               />
-              <span className="text-sm">Free Shipping</span>
+              <span className="text-sm font-light text-foreground/80">Free Shipping</span>
             </div>
           </div>
         </div>
 
         {/* Apply Filters Button */}
-        <Button onClick={applyFilters} className="w-full">
+        <Button onClick={applyFilters} className="elite-button w-full">
           <Filter className="h-4 w-4 mr-2" />
           Apply Filters
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

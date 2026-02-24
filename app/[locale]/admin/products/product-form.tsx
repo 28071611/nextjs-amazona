@@ -20,7 +20,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { createProduct, updateProduct } from '@/lib/actions/product.actions'
 import { IProduct } from '@/lib/db/models/product.model'
-import { UploadButton } from '@/lib/uploadthing'
+// import { UploadButton } from '@/lib/uploadthing'
+import LocalUploadButton from '@/components/shared/local-upload-button'
 import { ProductInputSchema, ProductUpdateSchema } from '@/lib/validator'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toSlug } from '@/lib/utils'
@@ -29,54 +30,56 @@ import { IProductInput } from '@/types'
 const productDefaultValues: IProductInput =
   process.env.NODE_ENV === 'development'
     ? {
-        name: 'Sample Product',
-        slug: 'sample-product',
-        category: 'Sample Category',
-        images: ['/images/p11-1.jpg'],
-        brand: 'Sample Brand',
-        description: 'This is a sample description of the product.',
-        price: 99.99,
-        listPrice: 0,
-        countInStock: 15,
-        numReviews: 0,
-        avgRating: 0,
-        numSales: 0,
-        isPublished: false,
-        tags: [],
-        sizes: [],
-        colors: [],
-        ratingDistribution: [],
-        reviews: [],
-      }
+      name: 'Sample Product',
+      slug: 'sample-product',
+      category: 'Sample Category',
+      images: ['/images/p11-1.jpg'],
+      brand: 'Sample Brand',
+      description: 'This is a sample description of the product.',
+      price: 99.99,
+      listPrice: 0,
+      countInStock: 15,
+      numReviews: 0,
+      avgRating: 0,
+      numSales: 0,
+      isPublished: false,
+      tags: [],
+      sizes: [],
+      colors: [],
+      ratingDistribution: [],
+      reviews: [],
+    }
     : {
-        name: '',
-        slug: '',
-        category: '',
-        images: [],
-        brand: '',
-        description: '',
-        price: 0,
-        listPrice: 0,
-        countInStock: 0,
-        numReviews: 0,
-        avgRating: 0,
-        numSales: 0,
-        isPublished: false,
-        tags: [],
-        sizes: [],
-        colors: [],
-        ratingDistribution: [],
-        reviews: [],
-      }
+      name: '',
+      slug: '',
+      category: '',
+      images: [],
+      brand: '',
+      description: '',
+      price: 0,
+      listPrice: 0,
+      countInStock: 0,
+      numReviews: 0,
+      avgRating: 0,
+      numSales: 0,
+      isPublished: false,
+      tags: [],
+      sizes: [],
+      colors: [],
+      ratingDistribution: [],
+      reviews: [],
+    }
 
 const ProductForm = ({
   type,
   product,
   productId,
+  path,
 }: {
   type: 'Create' | 'Update'
   product?: IProduct
   productId?: string
+  path?: string
 }) => {
   const router = useRouter()
 
@@ -102,12 +105,12 @@ const ProductForm = ({
         toast({
           description: res.message,
         })
-        router.push(`/admin/products`)
+        router.push(path || `/admin/products`)
       }
     }
     if (type === 'Update') {
       if (!productId) {
-        router.push(`/admin/products`)
+        router.push(path || `/admin/products`)
         return
       }
       const res = await updateProduct({ ...values, _id: productId })
@@ -117,7 +120,7 @@ const ProductForm = ({
           description: res.message,
         })
       } else {
-        router.push(`/admin/products`)
+        router.push(path || `/admin/products`)
       }
     }
   }
@@ -128,7 +131,7 @@ const ProductForm = ({
       <form
         method='post'
         onSubmit={form.handleSubmit(onSubmit)}
-        className='space-y-8'
+        className='space-y-8 bg-card text-card-foreground p-6 rounded-lg border border-border'
       >
         <div className='flex flex-col gap-5 md:flex-row'>
           <FormField
@@ -274,16 +277,9 @@ const ProductForm = ({
                         />
                       ))}
                       <FormControl>
-                        <UploadButton
-                          endpoint='imageUploader'
-                          onClientUploadComplete={(res: { url: string }[]) => {
-                            form.setValue('images', [...images, res[0].url])
-                          }}
-                          onUploadError={(error: Error) => {
-                            toast({
-                              variant: 'destructive',
-                              description: `ERROR! ${error.message}`,
-                            })
+                        <LocalUploadButton
+                          onUploadComplete={(url: string) => {
+                            form.setValue('images', [...images, url])
                           }}
                         />
                       </FormControl>

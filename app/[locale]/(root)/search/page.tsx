@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { getAllProducts } from '@/lib/actions/product.actions'
 import { IProduct } from '@/lib/db/models/product.model'
 import ProductSortSelector from '@/components/shared/product/product-sort-selector'
+import SearchFiltersClient from '@/components/shared/search/search-filters-client'
 import { getTranslations } from 'next-intl/server'
 
 const sortOrders = [
@@ -43,6 +44,8 @@ export default async function SearchPage(props: {
     tag?: string
     price?: string
     rating?: string
+    minPrice?: string
+    maxPrice?: string
     page?: string
     sort?: string
   }>
@@ -54,6 +57,8 @@ export default async function SearchPage(props: {
     tag = 'all',
     rating = 'all',
     price = 'all',
+    minPrice,
+    maxPrice,
     page = '1',
     sort,
   } = searchParams
@@ -64,83 +69,101 @@ export default async function SearchPage(props: {
     tag,
     rating,
     price,
+    minPrice: minPrice ? Number(minPrice) : undefined,
+    maxPrice: maxPrice ? Number(maxPrice) : undefined,
     page: Number(page),
     sort,
   })
   const t = await getTranslations()
+  
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className='my-2 bg-card md:border-b flex-between flex-col md:flex-row '>
-        <div className='flex items-center'>
-          {data.totalProducts === 0
-            ? t('Search.No')
-            : `${data.from}-${data.to} ${t('Search.of')} ${
-                data.totalProducts
-              }`}{' '}
-          {t('Search.results')}
-          {(q !== 'all' && q !== '') ||
-          (category !== 'all' && category !== '') ||
-          (tag !== 'all' && tag !== '') ||
-          (rating !== 'all') ||
-          (price !== 'all')
-            ? ` ${t('Search.for')} `
-            : null}
-          {q !== 'all' && q !== '' && '"' + q + '"'}
-          {category !== 'all' &&
-            category !== '' &&
-            `   ${t('Search.Category')}: ` + category}
-          {tag !== 'all' && tag !== '' && `   ${t('Search.Tag')}: ` + tag}
-          {price !== 'all' && `    ${t('Search.Price')}: ` + price}
-          {rating !== 'all' && `    ${t('Search.Rating')}: ` + rating + ` & ${t('Search.up')}`}
-          &nbsp;
-          {(q !== 'all' && q !== '') ||
-          (category !== 'all' && category !== '') ||
-          (tag !== 'all' && tag !== '') ||
-          (rating !== 'all') ||
-          (price !== 'all')
-            ? (
-            <Button variant={'link'} asChild>
-              <Link href='/search'>{t('Search.Clear')}</Link>
-            </Button>
-          ) : null}
-        </div>
-        <div>
-          <ProductSortSelector
-            sortOrders={sortOrders}
-            sort={sort || ''}
-            params={searchParams}
-          />
+    <div className="container-elite py-12 md:py-20">
+      {/* Search Results Header */}
+      <div className='elite-card elite-shadow-hover p-6 md:p-8 mb-8'>
+        <div className='flex flex-col md:flex-row md:items-center justify-between gap-4'>
+          <div className='flex items-center gap-4'>
+            <div className='text-foreground/80 font-light'>
+              {data.totalProducts === 0
+                ? t('Search.No')
+                : `${data.from}-${data.to} ${t('Search.of')} ${data.totalProducts}`
+              }{' '}
+              {t('Search.results')}
+            </div>
+            {(q !== 'all' && q !== '') ||
+            (category !== 'all' && category !== '') ||
+            (tag !== 'all' && tag !== '') ||
+            (rating !== 'all') ||
+            (price !== 'all')
+              ? (
+                <div className='flex items-center gap-2 text-sm font-light text-primary/80'>
+                  <span>{t('Search.for')}</span>
+                  {q !== 'all' && q !== '' && (
+                    <span className="elite-text">&quot;{q}&quot;</span>
+                  )}
+                  {category !== 'all' && category !== '' && (
+                    <span>Category: {category}</span>
+                  )}
+                  {tag !== 'all' && tag !== '' && (
+                    <span>Tag: {tag}</span>
+                  )}
+                  {price !== 'all' && <span>Price: {price}</span>}
+                  {rating !== 'all' && (
+                    <span>Rating: {rating} & {t('Search.up')}</span>
+                  )}
+                </div>
+              ) : null}
+          </div>
+          <div className='flex items-center gap-4'>
+            <ProductSortSelector
+              sortOrders={sortOrders}
+              sort={sort || ''}
+              params={searchParams}
+            />
+            {(q !== 'all' && q !== '') ||
+            (category !== 'all' && category !== '') ||
+            (tag !== 'all' && tag !== '') ||
+            (rating !== 'all') ||
+            (price !== 'all')
+              ? (
+                <Button variant={'link'} asChild className="font-light text-primary hover:text-accent">
+                  <Link href='/search'>{t('Search.Clear')}</Link>
+                </Button>
+              ) : null}
+          </div>
         </div>
       </div>
 
-      <div className='grid grid-cols-1 md:grid-cols-4 gap-8'>
-        <div className='md:col-span-1'>
-          <div className='space-y-4'>
-            <h3 className='text-lg font-semibold'>{t('Search.Filters')}</h3>
-            <div className='text-sm text-gray-600'>
-              {t('Search.Filter options coming soon')}
-            </div>
-          </div>
+      <div className='grid grid-cols-1 lg:grid-cols-4 gap-8'>
+        {/* Filters Sidebar */}
+        <div className='lg:col-span-1'>
+          <SearchFiltersClient searchParams={searchParams} />
         </div>
 
-        <div className='md:col-span-4 space-y-4'>
-          <div>
-            <div className='font-bold text-xl'>{t('Search.Results')}</div>
-            <div>
+        {/* Products Grid */}
+        <div className='lg:col-span-3 space-y-8'>
+          <div className='text-center space-y-4'>
+            <h2 className='h2-bold elite-heading font-light tracking-tight'>Search Results</h2>
+            <div className='elite-divider max-w-32 mx-auto'></div>
+            <p className='text-sm font-light text-foreground/60'>
               {t('Search.Check each product page for other buying options')}
-            </div>
+            </p>
           </div>
 
-          <div className='grid grid-cols-1 gap-4 md:grid-cols-2  lg:grid-cols-3  '>
+          <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'>
             {data.products.length === 0 && (
-              <div>{t('Search.No product found')}</div>
+              <div className='col-span-full text-center py-12'>
+                <p className='text-foreground/60 font-light'>{t('Search.No product found')}</p>
+              </div>
             )}
             {data.products.map((product: IProduct) => (
               <ProductCard key={product._id} product={product} />
             ))}
           </div>
+          
           {data.totalPages > 1 && (
-            <Pagination page={page} totalPages={data.totalPages} />
+            <div className='flex justify-center mt-12'>
+              <Pagination page={page} totalPages={data.totalPages} />
+            </div>
           )}
         </div>
       </div>

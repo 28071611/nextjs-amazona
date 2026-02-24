@@ -24,7 +24,13 @@ export default function VoiceSearch({ onResult }: { onResult: (text: string) => 
                 }
 
                 recog.onerror = (event: any) => {
-                    console.error('Speech recognition error:', event.error)
+                    // 'network' error fires on HTTP (non-HTTPS) environments — suppress silently
+                    // 'not-allowed' means mic permission was denied — show a warning
+                    if (event.error === 'not-allowed') {
+                        console.warn('Microphone access denied. Please allow microphone access.')
+                    } else if (event.error !== 'network' && event.error !== 'no-speech') {
+                        console.warn('Speech recognition error:', event.error)
+                    }
                     setIsListening(false)
                 }
 

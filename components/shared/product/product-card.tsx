@@ -1,8 +1,9 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
 
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { IProduct } from '@/lib/db/models/product.model'
 
 import Rating from './rating'
@@ -25,11 +26,13 @@ const ProductCard = ({
   hideAddToCart?: boolean
   hideWishlist?: boolean
 }) => {
+  const [isHovered, setIsHovered] = React.useState(false)
+  
   const ProductImage = () => (
     <Link href={`/product/${product.slug}`}>
-      <div className='relative h-52'>
+      <div className='relative h-64 group'>
         {!hideWishlist && (
-          <div className='absolute top-2 right-2 z-10'>
+          <div className='absolute top-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-700'>
             <AddToWishlist product={product} />
           </div>
         )}
@@ -40,47 +43,66 @@ const ProductCard = ({
             alt={product.name}
           />
         ) : (
-          <div className='relative h-52'>
+          <div className='relative h-64 overflow-hidden rounded-lg'>
             <Image
               src={product.images[0]}
               alt={product.name}
               fill
               sizes='80vw'
-              className='object-contain'
+              className='object-contain transform transition-transform duration-1000 group-hover:scale-110'
             />
+          </div>
+        )}
+        {product.tags.includes('todays-deal') && (
+          <div className='absolute top-3 left-3 z-10'>
+            <span className='bg-gradient-to-r from-red-600 to-red-700 text-white text-xs font-light px-3 py-1 rounded-full tracking-wider uppercase elite-glow'>
+              Limited Deal
+            </span>
           </div>
         )}
       </div>
     </Link>
   )
+  
   const ProductDetails = () => (
-    <div className='flex-1 space-y-2'>
-      <p className='font-bold'>{product.brand}</p>
+    <div className='flex-1 space-y-3 px-2'>
+      <p className='text-xs font-light text-primary/80 tracking-widest uppercase'>
+        {product.brand}
+      </p>
       <Link
         href={`/product/${product.slug}`}
-        className='overflow-hidden text-ellipsis'
-        style={{
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-        }}
+        className='block group'
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        {product.name}
+        <h3 className='font-light text-sm leading-tight text-foreground/90 group-hover:text-primary transition-colors duration-700 line-clamp-2' 
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}>
+          {product.name}
+        </h3>
       </Link>
-      <div className='flex gap-2 justify-center'>
-        <Rating rating={product.avgRating} />
-        <span>({formatNumber(product.numReviews)})</span>
+      <div className='flex items-center gap-2 justify-start'>
+        <Rating rating={product.avgRating} size={4} />
+        <span className='text-xs font-light text-foreground/50'>
+          ({formatNumber(product.numReviews)})
+        </span>
       </div>
 
       <ProductPrice
         isDeal={product.tags.includes('todays-deal')}
         price={product.price}
         listPrice={product.listPrice}
+        className='text-left'
       />
     </div>
   )
+  
   const AddButton = () => (
-    <div className='w-full text-center'>
+    <div className='w-full px-2 mt-3'>
       <AddToCart
         minimal
         item={{
@@ -101,33 +123,31 @@ const ProductCard = ({
   )
 
   return hideBorder ? (
-    <div className='flex flex-col'>
+    <div className='flex flex-col h-full elite-card elite-shadow-hover p-4 transition-all duration-1000 hover:scale-105'>
       <ProductImage />
       {!hideDetails && (
         <>
-          <div className='p-3 flex-1 text-center'>
-            <ProductDetails />
-          </div>
+          <ProductDetails />
           {!hideAddToCart && <AddButton />}
         </>
       )}
     </div>
   ) : (
-    <Card className='flex flex-col  '>
-      <CardHeader className='p-3'>
+    <div className='flex flex-col h-full elite-card elite-shadow-hover transition-all duration-1000 hover:scale-105'>
+      <div className='p-4'>
         <ProductImage />
-      </CardHeader>
+      </div>
       {!hideDetails && (
         <>
-          <CardContent className='p-3 flex-1  text-center'>
+          <div className='flex-1 px-4'>
             <ProductDetails />
-          </CardContent>
-          <CardFooter className='p-3'>
+          </div>
+          <div className='p-4'>
             {!hideAddToCart && <AddButton />}
-          </CardFooter>
+          </div>
         </>
       )}
-    </Card>
+    </div>
   )
 }
 

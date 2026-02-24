@@ -21,19 +21,20 @@ import { getSetting } from './setting.actions'
 export async function registerUser(userSignUp: IUserSignUp) {
   try {
     console.log('🧪 Starting user registration:', userSignUp.email);
-    
+
     // Validate input
     const user = await UserSignUpSchema.parseAsync({
       name: userSignUp.name,
       email: userSignUp.email,
       password: userSignUp.password,
       confirmPassword: userSignUp.confirmPassword,
+      isSeller: userSignUp.isSeller,
     })
     console.log('✅ Input validation passed');
 
     await connectToDatabase()
     console.log('✅ Database connected');
-    
+
     // Check if user already exists
     const existingUser = await User.findOne({ email: user.email })
     if (existingUser) {
@@ -46,15 +47,15 @@ export async function registerUser(userSignUp: IUserSignUp) {
     const { confirmPassword, ...userData } = user
     const hashedPassword = await bcrypt.hash(user.password, 5)
     console.log('✅ Password hashed');
-    
+
     const newUser = await User.create({
       ...userData,
       password: hashedPassword,
-      role: 'user',
+      role: user.isSeller ? 'Seller' : 'User',
       emailVerified: false,
     })
     console.log('✅ User created in database:', newUser._id);
-    
+
     return { success: true, message: 'User created successfully' }
   } catch (error) {
     console.error('❌ Registration error:', error);

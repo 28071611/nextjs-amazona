@@ -4,6 +4,7 @@ import { IProductInput } from '@/types'
 export interface IProduct extends Document, IProductInput {
   _id: string
   discountedPrice?: number
+  seller?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -18,6 +19,10 @@ const productSchema = new Schema<IProduct>(
       type: String,
       required: true,
       unique: true,
+    },
+    seller: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
     },
     category: {
       type: String,

@@ -71,6 +71,11 @@ export default async function ProductDetails(props: {
               <p className='p-medium-16 rounded-full bg-grey-500/10   text-grey-500'>
                 {t('Product.Brand')} {product.brand} {product.category}
               </p>
+              {product.seller && (product.seller as any).name && (
+                <p className='p-medium-16 rounded-full bg-grey-500/10   text-grey-500'>
+                  Sold by: {(product.seller as any).name}
+                </p>
+              )}
               <h1 className='font-bold text-lg lg:text-xl'>{product.name}</h1>
 
               <RatingSummary

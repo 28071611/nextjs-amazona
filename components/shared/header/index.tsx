@@ -13,41 +13,44 @@ export default async function Header() {
   const { site } = await getSetting()
   const t = await getTranslations()
   return (
-    <header className='bg-black  text-white'>
-      <div className='px-2'>
-        <div className='flex items-center justify-between'>
+    <header className='sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md transition-all'>
+      <div className='wrapper py-3'>
+        <div className='flex items-center justify-between gap-4'>
           <div className='flex items-center'>
             <Link
               href='/'
-              className='flex items-center header-button font-extrabold text-2xl m-1 '
+              className='flex items-center gap-2 transition-opacity hover:opacity-90'
             >
               <Image
                 src={site.logo}
                 width={40}
                 height={40}
                 alt={`${site.name} logo`}
+                className="brightness-125"
               />
-              {site.name}
+              <span className='text-2xl font-bold tracking-tighter text-gold font-serif'>
+                {site.name}
+              </span>
             </Link>
           </div>
 
-          <div className='hidden md:block flex-1 max-w-xl'>
+          <div className='hidden md:block flex-1 max-w-2xl px-8'>
             <Search />
           </div>
           <Menu />
         </div>
-        <div className='md:hidden block py-2'>
+        <div className='md:hidden block py-3 mt-2 border-t border-border/40'>
           <Search />
         </div>
       </div>
-      <div className='flex items-center px-3 mb-[1px]  bg-gray-800'>
+      <div className='flex items-center justify-center gap-6 px-4 py-2 bg-gradient-to-r from-card via-background to-card border-b border-border/40 text-sm font-medium tracking-wide overflow-x-auto'>
         <Sidebar categories={categories} />
-        <div className='flex items-center flex-wrap gap-3 overflow-hidden   max-h-[42px]'>
+        <div className='flex items-center gap-6'>
           {data.headerMenus.map((menu) => (
             <Link
               href={menu.href}
               key={menu.href}
-              className='header-button !p-2 '
+              className='text-muted-foreground hover:text-primary transition-colors duration-300 uppercase text-xs tracking-widest'
             >
               {t('Header.' + menu.name)}
             </Link>

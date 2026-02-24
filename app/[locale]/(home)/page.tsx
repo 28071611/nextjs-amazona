@@ -67,30 +67,56 @@ export default async function HomePage() {
   ]
 
   return (
-    <>
-      <HomeCarousel items={carousels} />
-      <PersonalizedProducts />
-      <div className='md:p-4 md:space-y-4 bg-border'>
+    <div className='space-y-24 md:space-y-32'>
+      {/* Hero Carousel */}
+      <div className='overflow-hidden rounded-lg elite-shadow elite-glow-hover elite-float'>
+        <HomeCarousel items={carousels} />
+      </div>
+      
+      {/* Personalized Products */}
+      <div className='elite-card elite-shadow-hover p-12 md:p-16'>
+        <PersonalizedProducts />
+      </div>
+      
+      {/* Category Collections */}
+      <div className='space-y-12'>
+        <div className='text-center space-y-6'>
+          <h2 className='h2-bold elite-heading'>Exclusive Collections</h2>
+          <div className='elite-divider max-w-32 mx-auto'></div>
+        </div>
         <HomeCard cards={cards} />
-        <Card className='w-full rounded-none'>
-          <CardContent className='p-4 items-center gap-3'>
-            <ProductSlider title={t("Today's Deals")} products={todaysDeals} />
-          </CardContent>
-        </Card>
-        <Card className='w-full rounded-none'>
-          <CardContent className='p-4 items-center gap-3'>
+      </div>
+      
+      {/* Product Showcases */}
+      <div className='space-y-24'>
+        <div className='elite-card elite-shadow-hover overflow-hidden'>
+          <div className='p-12 md:p-16'>
+            <div className='text-center mb-16'>
+              <h3 className='h3-bold mb-6 font-light'>{t("Today's Deals")}</h3>
+              <div className='elite-divider max-w-20 mx-auto'></div>
+            </div>
+            <ProductSlider products={todaysDeals} />
+          </div>
+        </div>
+        
+        <div className='elite-card elite-shadow-hover overflow-hidden'>
+          <div className='p-12 md:p-16'>
+            <div className='text-center mb-16'>
+              <h3 className='h3-bold mb-6 font-light'>{t('Best Selling Products')}</h3>
+              <div className='elite-divider max-w-20 mx-auto'></div>
+            </div>
             <ProductSlider
-              title={t('Best Selling Products')}
               products={bestSellingProducts}
               hideDetails
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
-      <div className='p-4 bg-background'>
+      {/* Browsing History */}
+      <div className='elite-card elite-shadow-hover p-12 md:p-16'>
         <BrowsingHistoryList />
       </div>
-    </>
+    </div>
   )
 }

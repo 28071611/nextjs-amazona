@@ -10,12 +10,21 @@ import { IProductInput } from '@/types'
 import { z } from 'zod'
 import { getSetting } from './setting.actions'
 import { getProductRecommendations, refineSearchQuery, suggestDiscounts } from '../ai'
+import { auth } from '@/auth'
 
 // CREATE
 export async function createProduct(data: IProductInput) {
   try {
     const product = ProductInputSchema.parse(data)
     await connectToDatabase()
+    const session = await auth()
+    if (!session?.user) throw new Error('User not found')
+
+    // If user is seller, assign product to them
+    if (session.user.role === 'Seller') {
+      (product as any).seller = session.user.id
+    }
+
     await Product.create(product)
     revalidatePath('/admin/products')
     // Invalidate cache after creating
@@ -35,8 +44,19 @@ export async function updateProduct(data: z.infer<typeof ProductUpdateSchema>) {
   try {
     const product = ProductUpdateSchema.parse(data)
     await connectToDatabase()
+    const session = await auth()
+    if (!session?.user) throw new Error('User not authenticated')
+
+    const productToUpdate = await Product.findById(product._id)
+    if (!productToUpdate) throw new Error('Product not found')
+
+    if (session.user.role === 'Seller' && productToUpdate.seller && productToUpdate.seller.toString() !== session.user.id) {
+      throw new Error('Not authorized to update this product')
+    }
+
     await Product.findByIdAndUpdate(product._id, product)
     revalidatePath('/admin/products')
+    revalidatePath('/seller/products')
     // Invalidate cache after updating
     await invalidateProductCache()
     return {
@@ -53,9 +73,18 @@ export async function updateProduct(data: z.infer<typeof ProductUpdateSchema>) {
 export async function deleteProduct(id: string) {
   try {
     await connectToDatabase()
-    const res = await Product.findByIdAndDelete(id)
-    if (!res) throw new Error('Product not found')
+    const session = await auth()
+    if (!session?.user) throw new Error('User not authenticated')
+
+    const product = await Product.findById(id)
+    if (!product) throw new Error('Product not found')
+
+    if (session.user.role === 'Seller' && product.seller && product.seller.toString() !== session.user.id) {
+      throw new Error('Not authorized to delete this product')
+    }
+    await Product.findByIdAndDelete(id)
     revalidatePath('/admin/products')
+    revalidatePath('/seller/products')
     // Invalidate cache after deleting
     await invalidateProductCache()
     return {
@@ -124,6 +153,74 @@ export async function getAllProductsForAdmin({
 
   const countProducts = await Product.countDocuments({
     ...queryFilter,
+  })
+  return {
+    products: JSON.parse(JSON.stringify(products)) as IProduct[],
+    totalPages: Math.ceil(countProducts / limitValue),
+    totalProducts: countProducts,
+    from: limitValue * (Number(page) - 1) + 1,
+    to: limitValue * (Number(page) - 1) + products.length,
+  }
+}
+
+
+export async function getAllProductsForSeller({
+  query,
+  page = 1,
+  sort = 'latest',
+  limit,
+}: {
+  query: string
+  page?: number
+  sort?: string
+  limit?: number
+}) {
+  await connectToDatabase()
+  const session = await auth()
+  if (!session?.user || session.user.role !== 'Seller') {
+    throw new Error('Unauthorized')
+  }
+  const sellerId = session.user.id
+
+  const {
+    common: { pageSize },
+  } = await getSetting()
+  limit = limit || pageSize
+  const queryFilter =
+    query && query !== 'all'
+      ? {
+        name: {
+          $regex: query,
+          $options: 'i',
+        },
+      }
+      : {}
+
+  const sellerFilter = { seller: sellerId }
+
+  const order: Record<string, 1 | -1> =
+    sort === 'best-selling'
+      ? { numSales: -1 }
+      : sort === 'price-low-to-high'
+        ? { price: 1 }
+        : sort === 'price-high-to-low'
+          ? { price: -1 }
+          : sort === 'avg-customer-review'
+            ? { avgRating: -1 }
+            : { _id: -1 }
+  const limitValue = limit || 10
+  const products = await Product.find({
+    ...queryFilter,
+    ...sellerFilter
+  })
+    .sort(order)
+    .skip(limitValue * (Number(page) - 1))
+    .limit(limitValue)
+    .lean()
+
+  const countProducts = await Product.countDocuments({
+    ...queryFilter,
+    ...sellerFilter
   })
   return {
     products: JSON.parse(JSON.stringify(products)) as IProduct[],
@@ -207,7 +304,7 @@ export async function getProductsByTag({
 // GET ONE PRODUCT BY SLUG
 export async function getProductBySlug(slug: string) {
   await connectToDatabase()
-  const product = await Product.findOne({ slug, isPublished: true })
+  const product = await Product.findOne({ slug, isPublished: true }).populate('seller', 'name')
   if (!product) throw new Error('Product not found')
   return JSON.parse(JSON.stringify(product)) as IProduct
 }
@@ -255,6 +352,8 @@ export async function getAllProducts({
   price,
   rating,
   sort,
+  minPrice,
+  maxPrice,
 }: {
   query: string
   category: string
@@ -264,6 +363,8 @@ export async function getAllProducts({
   price?: string
   rating?: string
   sort?: string
+  minPrice?: number
+  maxPrice?: number
 }) {
   const {
     common: { pageSize },
@@ -305,7 +406,6 @@ export async function getAllProducts({
         },
       }
       : {}
-  // 10-50
   const priceFilter =
     price && price !== 'all'
       ? {
@@ -314,7 +414,14 @@ export async function getAllProducts({
           $lte: Number(price.split('-')[1]),
         },
       }
-      : {}
+      : minPrice !== undefined || maxPrice !== undefined
+        ? {
+          price: {
+            ...(minPrice !== undefined && { $gte: minPrice }),
+            ...(maxPrice !== undefined && { $lte: maxPrice }),
+          },
+        }
+        : {}
   const order: Record<string, 1 | -1> =
     sort === 'best-selling'
       ? { numSales: -1 }
@@ -371,6 +478,18 @@ export async function getAllTags() {
           .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
           .join(' ')
       ) as string[]) || []
+  )
+}
+
+export async function getAllBrands() {
+  const brands = await Product.aggregate([
+    { $group: { _id: null, uniqueBrands: { $addToSet: '$brand' } } },
+    { $project: { _id: 0, uniqueBrands: 1 } },
+  ])
+  return (
+    (brands[0]?.uniqueBrands
+      .sort((a: string, b: string) => a.localeCompare(b))
+      .filter((brand: string) => brand && brand.trim() !== '') as string[]) || []
   )
 }
 

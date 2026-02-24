@@ -21,21 +21,22 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { UserSignUpSchema } from '@/lib/validator'
 import { Separator } from '@/components/ui/separator'
 import { isRedirectError } from 'next/dist/client/components/redirect-error'
+import { Checkbox } from '@/components/ui/checkbox'
 
 const signUpDefaultValues =
   process.env.NODE_ENV === 'development'
     ? {
-        name: 'john doe',
-        email: 'john@me.com',
-        password: '123456',
-        confirmPassword: '123456',
-      }
+      name: 'john doe',
+      email: 'john@me.com',
+      password: '123456',
+      confirmPassword: '123456',
+    }
     : {
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-      }
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    }
 
 export default function CredentialsSignInForm() {
   const {
@@ -143,6 +144,25 @@ export default function CredentialsSignInForm() {
                   />
                 </FormControl>
                 <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name='isSeller'
+            render={({ field }) => (
+              <FormItem className='flex flex-row items-start space-x-3 space-y-0'>
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className='space-y-1 leading-none'>
+                  <FormLabel>
+                    Register as a Seller
+                  </FormLabel>
+                </div>
               </FormItem>
             )}
           />
