@@ -1,20 +1,19 @@
 import { getAllCategories } from '@/lib/actions/product.actions'
 import { getSetting } from '@/lib/actions/setting.actions'
-import { getTranslations } from 'next-intl/server'
 import SearchForm from './search-form'
 
-export default async function Search() {
-  const {
-    site: { name },
-  } = await getSetting()
-  const categories = await getAllCategories()
+import data from '@/lib/data'
 
-  const t = await getTranslations()
+export default async function Search() {
+  const settings = await getSetting()
+  const site = settings?.site || data.settings[0].site
+  const categories = await getAllCategories()
+  
   return (
     <SearchForm
-      placeholder={t('Header.Search Site', { name })}
+      placeholder={`Search ${site.name}`}
       categories={categories}
-      tHeaderAll={t('Header.All')}
+      tHeaderAll="All"
     />
   )
 }

@@ -6,19 +6,21 @@ import { redirect } from 'next/navigation'
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { getSetting } from '@/lib/actions/setting.actions'
-import { getLocale } from 'next-intl/server'
 
 export default async function SellerLayout({
+    params,
     children,
 }: {
+    params: Promise<{ locale: string }>
     children: React.ReactNode
 }) {
+    const { locale } = await params
+
     const session = await auth()
     if (!session?.user || session.user.role !== 'Seller') {
         redirect('/')
     }
     const { site } = await getSetting()
-    const locale = await getLocale()
 
     return (
         <div className='flex flex-col min-h-screen'>

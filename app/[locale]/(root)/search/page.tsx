@@ -8,7 +8,6 @@ import { getAllProducts } from '@/lib/actions/product.actions'
 import { IProduct } from '@/lib/db/models/product.model'
 import ProductSortSelector from '@/components/shared/product/product-sort-selector'
 import SearchFiltersClient from '@/components/shared/search/search-filters-client'
-import { getTranslations } from 'next-intl/server'
 
 const sortOrders = [
   { value: 'price-low-to-high', name: 'Price: Low to high' },
@@ -74,20 +73,19 @@ export default async function SearchPage(props: {
     page: Number(page),
     sort,
   })
-  const t = await getTranslations()
-  
+
   return (
     <div className="container-elite py-12 md:py-20">
       {/* Search Results Header */}
-      <div className='elite-card elite-shadow-hover p-6 md:p-8 mb-8'>
-        <div className='flex flex-col md:flex-row md:items-center justify-between gap-4'>
-          <div className='flex items-center gap-4'>
-            <div className='text-foreground/80 font-light'>
+      <div className="elite-card elite-shadow-hover p-6 md:p-8 mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="text-foreground/80 font-light">
               {data.totalProducts === 0
-                ? t('Search.No')
-                : `${data.from}-${data.to} ${t('Search.of')} ${data.totalProducts}`
+                ? 'No'
+                : `${data.from}-${data.to} of ${data.totalProducts}`
               }{' '}
-              {t('Search.results')}
+              results
             </div>
             {(q !== 'all' && q !== '') ||
             (category !== 'all' && category !== '') ||
@@ -96,7 +94,7 @@ export default async function SearchPage(props: {
             (price !== 'all')
               ? (
                 <div className='flex items-center gap-2 text-sm font-light text-primary/80'>
-                  <span>{t('Search.for')}</span>
+                  <span>for</span>
                   {q !== 'all' && q !== '' && (
                     <span className="elite-text">&quot;{q}&quot;</span>
                   )}
@@ -108,7 +106,7 @@ export default async function SearchPage(props: {
                   )}
                   {price !== 'all' && <span>Price: {price}</span>}
                   {rating !== 'all' && (
-                    <span>Rating: {rating} & {t('Search.up')}</span>
+                    <span>Rating: {rating} & up</span>
                   )}
                 </div>
               ) : null}
@@ -126,7 +124,7 @@ export default async function SearchPage(props: {
             (price !== 'all')
               ? (
                 <Button variant={'link'} asChild className="font-light text-primary hover:text-accent">
-                  <Link href='/search'>{t('Search.Clear')}</Link>
+                  <Link href='/search'>Clear</Link>
                 </Button>
               ) : null}
           </div>
@@ -145,21 +143,21 @@ export default async function SearchPage(props: {
             <h2 className='h2-bold elite-heading font-light tracking-tight'>Search Results</h2>
             <div className='elite-divider max-w-32 mx-auto'></div>
             <p className='text-sm font-light text-foreground/60'>
-              {t('Search.Check each product page for other buying options')}
+              Check each product page for other buying options
             </p>
           </div>
 
           <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'>
             {data.products.length === 0 && (
               <div className='col-span-full text-center py-12'>
-                <p className='text-foreground/60 font-light'>{t('Search.No product found')}</p>
+                <p className='text-foreground/60 font-light'>No product found</p>
               </div>
             )}
             {data.products.map((product: IProduct) => (
               <ProductCard key={product._id} product={product} />
             ))}
           </div>
-          
+
           {data.totalPages > 1 && (
             <div className='flex justify-center mt-12'>
               <Pagination page={page} totalPages={data.totalPages} />

@@ -1,9 +1,7 @@
 import { getDemandPrediction } from '@/lib/actions/order.actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { getTranslations } from 'next-intl/server'
 
 export default async function PredictionsPage() {
-    const t = await getTranslations()
     const predictionData = await getDemandPrediction()
 
     if (!predictionData) {

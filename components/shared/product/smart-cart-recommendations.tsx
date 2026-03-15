@@ -3,14 +3,12 @@
 import { useEffect, useState } from 'react'
 import { getAICartRecommendations } from '@/lib/actions/product.actions'
 import ProductSlider from './product-slider'
-import { useTranslations } from 'next-intl'
 
 export default function SmartCartRecommendations({
     cartItems,
 }: {
     cartItems: any[]
 }) {
-    const t = useTranslations('Cart')
     const [recommendedProducts, setRecommendedProducts] = useState<any[]>([])
 
     useEffect(() => {
@@ -29,7 +27,7 @@ export default function SmartCartRecommendations({
         <section className='mt-10'>
             <ProductSlider
                 products={recommendedProducts}
-                title={t('Frequently Bought Together')}
+                title="Frequently Bought Together"
             />
         </section>
     )

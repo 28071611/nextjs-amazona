@@ -1,17 +1,16 @@
 import '../globals.css'
 import ClientProviders from '@/components/shared/client-providers'
-import { getDirection } from '@/i18n-config'
-import { NextIntlClientProvider } from 'next-intl'
-import { getMessages } from 'next-intl/server'
-import { routing } from '@/i18n/routing'
-import { notFound } from 'next/navigation'
+import Header from '@/components/shared/header'
+import Footer from '@/components/shared/footer'
 import { getSetting } from '@/lib/actions/setting.actions'
 import { cookies } from 'next/headers'
+import { NextIntlClientProvider } from 'next-intl'
+import { getMessages } from 'next-intl/server'
+import data from '@/lib/data'
 
 export async function generateMetadata() {
-  const {
-    site: { slogan, name, description, url },
-  } = await getSetting()
+  const settings = await getSetting()
+  const { slogan, name, description, url } = settings?.site || data.settings[0].site
   return {
     title: {
       template: `%s | ${name}`,
@@ -34,23 +33,19 @@ export default async function AppLayout({
   const currency = currencyCookie ? currencyCookie.value : 'USD'
 
   const { locale } = await params
-  // Ensure that the incoming `locale` is valid
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (!routing.locales.includes(locale as any)) {
-    notFound()
-  }
   const messages = await getMessages()
-
   return (
-    <html
-      lang={locale}
-      dir={getDirection(locale) === 'rtl' ? 'rtl' : 'ltr'}
-      suppressHydrationWarning
-    >
-      <body className="min-h-screen font-sans antialiased">
+    <html lang={locale} suppressHydrationWarning={true}>
+      <body className="min-h-screen font-sans antialiased" suppressHydrationWarning={true}>
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <ClientProviders setting={{ ...setting, currency }}>
-            {children}
+          <ClientProviders setting={{ ...(setting || data.settings[0]), currency }}>
+            <div className="flex flex-col min-h-screen">
+              <Header />
+              <main className="flex-1">
+                {children}
+              </main>
+              <Footer />
+            </div>
           </ClientProviders>
         </NextIntlClientProvider>
       </body>

@@ -300,6 +300,7 @@ export const SiteCurrencySchema = z.object({
 export const PaymentMethodSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   commission: z.coerce.number().min(0, 'Commission must be at least 0'),
+  logo: z.string().optional(),
 })
 
 export const DeliveryDateSchema = z.object({

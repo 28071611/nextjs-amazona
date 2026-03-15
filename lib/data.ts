@@ -1301,7 +1301,7 @@ We also provide helpful resources such as order tracking, product guides, and FA
           url: '/search?category=Wrist Watches',
         },
       ],
-      availableLanguages: i18n.locales.map((locale) => ({
+      availableLanguages: i18n.locales.map((locale: any) => ({
         code: locale.code,
         name: locale.name,
       })),
@@ -1319,9 +1319,26 @@ We also provide helpful resources such as order tracking, product guides, and FA
       ],
       defaultCurrency: 'INR',
       availablePaymentMethods: [
-        { name: 'PayPal', commission: 0 },
-        { name: 'Stripe', commission: 0 },
-        { name: 'Cash On Delivery', commission: 0 },
+        {
+          name: 'PayPal',
+          commission: 0,
+          logo: '/images/paypal.png',
+        },
+        {
+          name: 'Stripe',
+          commission: 0,
+          logo: '/images/stripe.png',
+        },
+        {
+          name: 'Razorpay',
+          commission: 0,
+          logo: '/images/razorpay.png',
+        },
+        {
+          name: 'Cash on Delivery',
+          commission: 0,
+          logo: '/images/cod.png',
+        },
       ],
       defaultPaymentMethod: 'PayPal',
       availableDeliveryDates: [

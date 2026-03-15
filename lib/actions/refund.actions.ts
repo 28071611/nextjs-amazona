@@ -138,7 +138,7 @@ export async function getOrderRefunds(orderId: string): Promise<any[]> {
       return []
     }
 
-    return order.refunds || []
+    return JSON.parse(JSON.stringify(order.refunds || [])) as any[]
   } catch (error) {
     console.error('Get order refunds error:', error)
     return []
@@ -164,7 +164,7 @@ export async function getAllRefunds(): Promise<any[]> {
       if (order.refunds && order.refunds.length > 0) {
         order.refunds.forEach(refund => {
           allRefunds.push({
-            ...refund,
+            ...JSON.parse(JSON.stringify(refund)),
             orderId: order._id,
             orderNumber: order._id.toString().slice(-6),
             customerName: (order.user as any)?.name,

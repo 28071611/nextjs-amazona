@@ -2,7 +2,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Shield, AlertTriangle, CheckCircle, Eye } from 'lucide-react'
-import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 
 // Mock data - in a real implementation, this would come from your database
@@ -56,7 +55,6 @@ const mockOrders = [
 ]
 
 export default async function FraudDetectionPage() {
-  const t = await getTranslations()
 
   const highRiskOrders = mockOrders.filter(order => order.fraudAnalysis.isFraudulent)
   const lowRiskOrders = mockOrders.filter(order => !order.fraudAnalysis.isFraudulent)

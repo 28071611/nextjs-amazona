@@ -10,64 +10,44 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-
-import { useLocale } from 'next-intl'
-import { Link, usePathname } from '@/i18n/routing'
-import useSettingStore from '@/hooks/use-setting-store'
-import { i18n } from '@/i18n-config'
-import { setCurrencyOnServer } from '@/lib/actions/setting.actions'
 import { ChevronDownIcon } from 'lucide-react'
+import { Link, useRouter, usePathname } from '@/i18n'
+import { useLocale } from 'next-intl'
+import { i18n } from '@/i18n-config'
 
 export default function LanguageSwitcher() {
   const { locales } = i18n
   const locale = useLocale()
+  const router = useRouter()
   const pathname = usePathname()
 
-  const {
-    setting: { availableCurrencies, currency },
-    setCurrency,
-  } = useSettingStore()
-  const handleCurrencyChange = async (newCurrency: string) => {
-    await setCurrencyOnServer(newCurrency)
-    setCurrency(newCurrency)
+  const handleLocaleChange = (newLocale: string) => {
+    router.push(pathname, { locale: newLocale })
   }
+
+  const currentLocaleData = i18n.locales.find(l => l.code === locale)
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className='header-button h-[41px]'>
         <div className='flex items-center gap-1'>
           <span className='text-xl'>
-            {locales.find((l) => l.code === locale)?.icon}
+            {currentLocaleData?.icon || '🌐'}
           </span>
-          {locale.toUpperCase().slice(0, 2)}
+          {locale.toUpperCase().split('-')[0]}
           <ChevronDownIcon />
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent className='w-56'>
         <DropdownMenuLabel>Language</DropdownMenuLabel>
-        <DropdownMenuRadioGroup value={locale}>
-          {locales.map((c) => (
-            <DropdownMenuRadioItem key={c.name} value={c.code}>
-              <Link
-                className='w-full flex items-center gap-1'
-                href={pathname}
-                locale={c.code}
-              >
-                <span className='text-lg'>{c.icon}</span> {c.name}
-              </Link>
-            </DropdownMenuRadioItem>
-          ))}
-        </DropdownMenuRadioGroup>
-
         <DropdownMenuSeparator />
-
-        <DropdownMenuLabel>Currency</DropdownMenuLabel>
         <DropdownMenuRadioGroup
-          value={currency}
-          onValueChange={handleCurrencyChange}
+          value={locale}
+          onValueChange={handleLocaleChange}
         >
-          {availableCurrencies.map((c) => (
-            <DropdownMenuRadioItem key={c.name} value={c.code}>
-              {c.symbol} {c.code}
+          {i18n.locales.map((l) => (
+            <DropdownMenuRadioItem key={l.code} value={l.code}>
+              {l.icon} {l.name}
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>

@@ -27,7 +27,7 @@ export async function getUserAddresses(): Promise<IUser | null> {
 
     await connectToDatabase()
     const user = await User.findById(session.user.id)
-    return user
+    return JSON.parse(JSON.stringify(user)) as IUser | null
   } catch (error) {
     console.error('Get user addresses error:', error)
     return null

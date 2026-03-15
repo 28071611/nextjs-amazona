@@ -22,7 +22,7 @@ export async function getWishlist(): Promise<IWishlist | null> {
         select: '_id name slug image price category brand countInStock isPublished'
       })
 
-    return wishlist
+    return JSON.parse(JSON.stringify(wishlist)) as IWishlist | null
   } catch (error) {
     console.error('Get wishlist error:', error)
     return null

@@ -12,11 +12,9 @@ import {
 import { SignOut } from '@/lib/actions/user.actions'
 import { cn } from '@/lib/utils'
 import { ChevronDownIcon } from 'lucide-react'
-import { getTranslations } from 'next-intl/server'
-import Link from 'next/link'
+import { Link } from '@/i18n'
 
 export default async function UserButton() {
-  const t = await getTranslations()
   const session = await auth()
   return (
     <div className='flex gap-2 items-center'>
@@ -25,10 +23,10 @@ export default async function UserButton() {
           <div className='flex items-center'>
             <div className='flex flex-col text-xs text-left'>
               <span>
-                {t('Header.Hello')},{' '}
-                {session ? session.user.name : t('Header.sign in')}
+                Hello,{' '}
+                {session ? session.user.name : 'Guest'}
               </span>
-              <span className='font-bold'>{t('Header.Account & Orders')}</span>
+              <span className='font-bold'>Account & Orders</span>
             </div>
             <ChevronDownIcon />
           </div>
@@ -47,18 +45,18 @@ export default async function UserButton() {
             </DropdownMenuLabel>
             <DropdownMenuGroup>
               <Link className='w-full' href='/account'>
-                <DropdownMenuItem>{t('Header.Your account')}</DropdownMenuItem>
+                <DropdownMenuItem>Your account</DropdownMenuItem>
               </Link>
               <Link className='w-full' href='/account/orders'>
-                <DropdownMenuItem>{t('Header.Your orders')}</DropdownMenuItem>
+                <DropdownMenuItem>Your orders</DropdownMenuItem>
               </Link>
               <Link className='w-full' href='/wishlist'>
-                <DropdownMenuItem>{t('Header.Wishlist')}</DropdownMenuItem>
+                <DropdownMenuItem>Wishlist</DropdownMenuItem>
               </Link>
 
               {session.user.role === 'Admin' && (
                 <Link className='w-full' href='/admin/overview'>
-                  <DropdownMenuItem>{t('Header.Admin')}</DropdownMenuItem>
+                  <DropdownMenuItem>Admin</DropdownMenuItem>
                 </Link>
               )}
               {session.user.role === 'Seller' && (
@@ -73,7 +71,7 @@ export default async function UserButton() {
                   className='w-full py-4 px-2 h-4 justify-start'
                   variant='ghost'
                 >
-                  {t('Header.Sign out')}
+                  Sign out
                 </Button>
               </form>
             </DropdownMenuItem>
@@ -86,14 +84,14 @@ export default async function UserButton() {
                   className={cn(buttonVariants(), 'w-full')}
                   href='/sign-in'
                 >
-                  {t('Header.Sign in')}
+                  Sign in
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuLabel>
               <div className='font-normal'>
-                {t('Header.New Customer')}?{' '}
-                <Link href='/sign-up'>{t('Header.Sign up')}</Link>
+                New Customer?{' '}
+                <Link href='/sign-up'>Sign up</Link>
               </div>
             </DropdownMenuLabel>
           </DropdownMenuContent>

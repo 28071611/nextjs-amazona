@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import useSettingStore from '@/hooks/use-setting-store'
 import { ClientSetting } from '@/types'
 
 export default function AppInitializer({
@@ -14,10 +13,10 @@ export default function AppInitializer({
   useEffect(() => {
     setRendered(true)
   }, [setting])
+
   if (!rendered) {
-    useSettingStore.setState({
-      setting,
-    })
+    // Initialize settings here if needed
+    console.log('AppInitializer: Initializing with settings', setting)
   }
 
   return children

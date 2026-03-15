@@ -1,6 +1,6 @@
 import { HelpCircle } from 'lucide-react'
 import Image from 'next/image'
-import Link from 'next/link'
+import { Link } from '@/i18n'
 import React from 'react'
 
 export default function CheckoutLayout({

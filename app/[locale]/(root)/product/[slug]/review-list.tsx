@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { useInView } from 'react-intersection-observer'
 import { z } from 'zod'
-import { useTranslations } from 'next-intl'
 
 import Rating from '@/components/shared/product/rating'
 import { Button } from '@/components/ui/button'
@@ -67,7 +66,6 @@ export default function ReviewList({
   userId: string | undefined
   product: IProduct
 }) {
-  const t = useTranslations('Product')
   const [page, setPage] = useState(2)
   const [totalPages, setTotalPages] = useState(0)
   const [reviews, setReviews] = useState<IReviewDetails[]>([])
@@ -80,7 +78,7 @@ export default function ReviewList({
       } catch (err) {
       toast({
         variant: 'destructive',
-        description: t('Error in fetching reviews'),
+        description: 'Error in fetching reviews',
       })
     }
   }
@@ -149,7 +147,7 @@ export default function ReviewList({
   }
   return (
     <div className='space-y-2'>
-      {reviews.length === 0 && <div>{t('No reviews yet')}</div>}
+      {reviews.length === 0 && <div>No reviews yet</div>}
 
       <div className='grid grid-cols-1 md:grid-cols-4 gap-8'>
         <div className='flex flex-col gap-2'>
@@ -163,10 +161,10 @@ export default function ReviewList({
           <Separator className='my-3' />
           <div className='space-y-3'>
             <h3 className='font-bold text-lg lg:text-xl'>
-              {t('Review this product')}
+              Review this product
             </h3>
             <p className='text-sm'>
-              {t('Share your thoughts with other customers')}
+              Share your thoughts with other customers
             </p>
             {userId ? (
               <Dialog open={open} onOpenChange={setOpen}>
@@ -175,7 +173,7 @@ export default function ReviewList({
                   variant='outline'
                   className=' rounded-full w-full'
                 >
-                  {t('Write a customer review')}
+                  Write a customer review
                 </Button>
 
                 <DialogContent className='sm:max-w-[425px]'>
@@ -183,10 +181,10 @@ export default function ReviewList({
                     <form method='post' onSubmit={form.handleSubmit(onSubmit)}>
                       <DialogHeader>
                         <DialogTitle>
-                          {t('Write a customer review')}
+                          Write a customer review
                         </DialogTitle>
                         <DialogDescription>
-                          {t('Share your thoughts with other customers')}
+                          Share your thoughts with other customers
                         </DialogDescription>
                       </DialogHeader>
                       <div className='grid gap-4 py-4'>
@@ -196,10 +194,10 @@ export default function ReviewList({
                             name='title'
                             render={({ field }) => (
                               <FormItem className='w-full'>
-                                <FormLabel>{t('Title')}</FormLabel>
+                                <FormLabel>Title</FormLabel>
                                 <FormControl>
                                   <Input
-                                    placeholder={t('Enter title')}
+                                    placeholder='Enter title'
                                     {...field}
                                   />
                                 </FormControl>
@@ -213,10 +211,10 @@ export default function ReviewList({
                             name='comment'
                             render={({ field }) => (
                               <FormItem className='w-full'>
-                                <FormLabel>{t('Comment')}</FormLabel>
+                                <FormLabel>Comment</FormLabel>
                                 <FormControl>
                                   <Textarea
-                                    placeholder={t('Enter comment')}
+                                    placeholder='Enter comment'
                                     {...field}
                                   />
                                 </FormControl>
@@ -231,7 +229,7 @@ export default function ReviewList({
                             name='rating'
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>{t('Rating')}</FormLabel>
+                                <FormLabel>Rating</FormLabel>
                                 <Select
                                   onValueChange={field.onChange}
                                   value={field.value.toString()}
@@ -239,7 +237,7 @@ export default function ReviewList({
                                   <FormControl>
                                     <SelectTrigger>
                                       <SelectValue
-                                        placeholder={t('Select a rating')}
+                                        placeholder='Select a rating'
                                       />
                                     </SelectTrigger>
                                   </FormControl>
@@ -274,8 +272,8 @@ export default function ReviewList({
                           disabled={form.formState.isSubmitting}
                         >
                           {form.formState.isSubmitting
-                            ? t('Submitting...')
-                            : t('Submit')}
+                            ? 'Submitting...'
+                            : 'Submit'}
                         </Button>
                       </DialogFooter>
                     </form>
@@ -284,14 +282,14 @@ export default function ReviewList({
               </Dialog>
             ) : (
               <div>
-                {t('Please')}{' '}
+                Please{' '}
                 <Link
                   href={`/sign-in?callbackUrl=/product/${product.slug}`}
                   className='highlight-link'
                 >
-                  {t('sign in')}
+                  sign in
                 </Link>{' '}
-                {t('to write a review')}
+                to write a review
               </div>
             )}
           </div>
@@ -303,7 +301,7 @@ export default function ReviewList({
                 <div className='flex-between'>
                   <CardTitle>{review.title}</CardTitle>
                   <div className='italic text-sm flex'>
-                    <Check className='h-4 w-4' /> {t('Verified Purchase')}
+                    <Check className='h-4 w-4' /> Verified Purchase
                   </div>
                 </div>
                 <CardDescription>{review.comment}</CardDescription>
@@ -313,7 +311,7 @@ export default function ReviewList({
                   <Rating rating={review.rating} />
                   <div className='flex items-center'>
                     <User className='mr-1 h-3 w-3' />
-                    {review.user ? review.user.name : t('Deleted User')}
+                    {review.user ? review.user.name : 'Deleted User'}
                   </div>
                   <div className='flex items-center'>
                     <Calendar className='mr-1 h-3 w-3' />
@@ -326,11 +324,11 @@ export default function ReviewList({
           <div ref={ref}>
             {page <= totalPages && (
               <Button variant={'link'} onClick={loadMoreReviews}>
-                {t('See more reviews')}
+                See more reviews
               </Button>
             )}
 
-            {page < totalPages && loadingReviews && t('Loading')}
+            {page < totalPages && loadingReviews && 'Loading'}
           </div>
         </div>
       </div>

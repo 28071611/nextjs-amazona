@@ -10,7 +10,8 @@ import { revalidatePath } from 'next/cache'
 export async function getCoupons(): Promise<ICoupon[]> {
   try {
     await connectToDatabase()
-    return await Coupon.find({}).sort({ createdAt: -1 })
+    const coupons = await Coupon.find({}).sort({ createdAt: -1 })
+    return JSON.parse(JSON.stringify(coupons)) as ICoupon[]
   } catch (error) {
     console.error('Get coupons error:', error)
     return []
@@ -20,7 +21,8 @@ export async function getCoupons(): Promise<ICoupon[]> {
 export async function getCouponById(id: string): Promise<ICoupon | null> {
   try {
     await connectToDatabase()
-    return await Coupon.findById(id)
+    const coupon = await Coupon.findById(id)
+    return JSON.parse(JSON.stringify(coupon)) as ICoupon | null
   } catch (error) {
     console.error('Get coupon by ID error:', error)
     return null
@@ -174,7 +176,7 @@ export async function applyCoupon(code: string, orderAmount: number, userId?: st
       success: true, 
       discount, 
       message: `Coupon applied successfully! You saved $${discount.toFixed(2)}`,
-      coupon
+      coupon: JSON.parse(JSON.stringify(coupon)) as ICoupon
     }
   } catch (error) {
     console.error('Apply coupon error:', error)
@@ -208,7 +210,7 @@ export async function validateCoupon(code: string): Promise<{
 
     return { 
       valid: true, 
-      coupon,
+      coupon: JSON.parse(JSON.stringify(coupon)) as ICoupon,
       message: 'Coupon is valid' 
     }
   } catch (error) {

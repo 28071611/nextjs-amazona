@@ -13,14 +13,12 @@ import {
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { useTranslations } from 'next-intl'
 import { ICarousel } from '@/types'
+
 export function HomeCarousel({ items }: { items: ICarousel[] }) {
   const plugin = React.useRef(
     Autoplay({ delay: 6000, stopOnInteraction: true })
   )
-
-  const t = useTranslations('Home')
 
   return (
     <div className='relative overflow-hidden'>
@@ -47,10 +45,10 @@ export function HomeCarousel({ items }: { items: ICarousel[] }) {
                   <div className='absolute w-full md:w-2/3 lg:w-1/2 left-8 md:left-16 lg:left-20 top-1/2 transform -translate-y-1/2 z-10'>
                     <div className='space-y-8'>
                       <h2 className='elite-heading text-4xl md:text-6xl lg:text-7xl font-thin text-white leading-tight tracking-tight drop-shadow-2xl'>
-                        {t(`${item.title}`)}
+                        {item.title}
                       </h2>
                       <button className='elite-button bg-black/80 hover:bg-black/90 text-white border-black/70 hover:border-black max-w-fit backdrop-blur-sm'>
-                        <span>{t(`${item.buttonCaption}`)}</span>
+                        <span>{item.buttonCaption}</span>
                       </button>
                     </div>
                   </div>

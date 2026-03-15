@@ -4,7 +4,6 @@ import { usePathname } from 'next/navigation'
 import React from 'react'
 
 import { cn } from '@/lib/utils'
-import { useTranslations } from 'next-intl'
 
 const links = [
   {
@@ -22,6 +21,18 @@ const links = [
   {
     title: 'Users',
     href: '/admin/users',
+  },
+  {
+    title: 'Coupons',
+    href: '/admin/coupons',
+  },
+  {
+    title: 'COD',
+    href: '/admin/cod',
+  },
+  {
+    title: 'Refunds',
+    href: '/admin/refunds',
   },
   {
     title: 'Pages',
@@ -49,7 +60,7 @@ export function AdminNav({
   ...props
 }: React.HTMLAttributes<HTMLElement>) {
   const pathname = usePathname()
-  const t = useTranslations('Admin')
+  
   return (
     <nav
       className={cn(
@@ -67,7 +78,7 @@ export function AdminNav({
             pathname.includes(item.href) ? '' : 'text-muted-foreground'
           )}
         >
-          {t(item.title)}
+          {item.title}
         </Link>
       ))}
     </nav>

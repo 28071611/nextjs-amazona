@@ -16,8 +16,6 @@ import {
 import { TrashIcon } from 'lucide-react'
 import useSettingStore from '@/hooks/use-setting-store'
 import ProductPrice from './product/product-price'
-import { useLocale, useTranslations } from 'next-intl'
-import { getDirection } from '@/i18n-config'
 
 export default function CartSidebar() {
   const {
@@ -31,28 +29,22 @@ export default function CartSidebar() {
     },
   } = useSettingStore()
 
-  const t = useTranslations()
-
-  const locale = useLocale()
   return (
     <div className='w-32 overflow-y-auto'>
       <div
-        className={`w-32 fixed  h-full ${
-          getDirection(locale) === 'rtl' ? 'border-r' : 'border-l'
-        }`}
+        className='w-32 fixed  h-full border-l'
       >
         <div className='p-2 h-full flex flex-col gap-2 justify-center items-center'>
           <div className='text-center space-y-2'>
-            <div> {t('Cart.Subtotal')}</div>
+            <div>Subtotal</div>
             <div className='font-bold '>
               <ProductPrice price={itemsPrice} plain />
             </div>
             {itemsPrice > freeShippingMinPrice && (
               <div className=' text-center text-xs'>
-                {t('Cart.Your order qualifies for FREE Shipping')}
+                Our order qualifies for FREE Shipping
               </div>
             )}
-
             <Link
               className={cn(
                 buttonVariants({ variant: 'outline' }),
@@ -60,7 +52,7 @@ export default function CartSidebar() {
               )}
               href='/cart'
             >
-              {t('Cart.Go to Cart')}
+              Go to Cart
             </Link>
             <Separator className='mt-3' />
           </div>

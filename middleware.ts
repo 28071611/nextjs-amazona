@@ -1,5 +1,5 @@
 import createMiddleware from 'next-intl/middleware'
-import { routing } from './i18n/routing'
+import { routing } from './i18n'
 
 import NextAuth from 'next-auth'
 import authConfig from './auth.config'
@@ -29,13 +29,15 @@ export default auth((req) => {
   const isPublicPage = publicPathnameRegex.test(req.nextUrl.pathname)
 
   if (isPublicPage) {
-    // return NextResponse.next()
     return intlMiddleware(req)
   } else {
     if (!req.auth) {
+      const locale = req.nextUrl.pathname.split('/')[1]
+      const hasLocale = routing.locales.includes(locale as any)
+      const signInPath = hasLocale ? `/${locale}/sign-in` : '/sign-in'
+
       const newUrl = new URL(
-        `/sign-in?callbackUrl=${
-          encodeURIComponent(req.nextUrl.pathname) || '/'
+        `${signInPath}?callbackUrl=${encodeURIComponent(req.nextUrl.pathname) || '/'
         }`,
         req.nextUrl.origin
       )

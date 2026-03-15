@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
-import CouponList from './coupon-list'
+import CouponManagement from './coupon-management'
 
 export const metadata: Metadata = {
   title: 'Coupons Management',
@@ -14,5 +14,5 @@ export default async function CouponsPage() {
     redirect('/sign-in')
   }
 
-  return <CouponList />
+  return <CouponManagement />
 }

@@ -1,6 +1,8 @@
 import { IOrderInput } from '@/types'
 import { Document, Model, model, models, Schema } from 'mongoose'
 
+export type OrderStatus = 'Placed' | 'Processing' | 'Confirmed' | 'Packed' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled'
+
 export interface IOrder extends Document, IOrderInput {
   _id: string
   isFraudulent: boolean
@@ -12,6 +14,15 @@ export interface IOrder extends Document, IOrderInput {
   paidAt?: Date
   isDelivered: boolean
   deliveredAt?: Date
+  orderStatus: OrderStatus
+  statusHistory: {
+    status: OrderStatus
+    updatedAt: Date
+    note?: string
+  }[]
+  isCancelled: boolean
+  cancelledAt?: Date
+  cancelReason?: string
   codPayment?: {
     isPaid: boolean
     paidAt?: Date
@@ -29,6 +40,9 @@ export interface IOrder extends Document, IOrderInput {
     processedBy?: string
     notes?: string
   }[]
+  razorpayPaymentId?: string
+  razorpayOrderId?: string
+  paymentMethod: string
 }
 
 const orderSchema = new Schema<IOrder>(
@@ -69,6 +83,8 @@ const orderSchema = new Schema<IOrder>(
     expectedDeliveryDate: { type: Date, required: true },
     paymentMethod: { type: String, required: true },
     paymentResult: { id: String, status: String, email_address: String },
+    razorpayPaymentId: { type: String },
+    razorpayOrderId: { type: String },
     itemsPrice: { type: Number, required: true },
     shippingPrice: { type: Number, required: true },
     taxPrice: { type: Number, required: true },
@@ -77,6 +93,19 @@ const orderSchema = new Schema<IOrder>(
     paidAt: { type: Date },
     isDelivered: { type: Boolean, required: true, default: false },
     deliveredAt: { type: Date },
+    orderStatus: {
+      type: String,
+      enum: ['Placed', 'Processing', 'Confirmed', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'],
+      default: 'Placed',
+    },
+    statusHistory: [{
+      status: { type: String, required: true },
+      updatedAt: { type: Date, default: Date.now },
+      note: { type: String },
+    }],
+    isCancelled: { type: Boolean, default: false },
+    cancelledAt: { type: Date },
+    cancelReason: { type: String },
     isFraudulent: { type: Boolean, default: false },
     fraudRiskScore: { type: Number, default: 0 },
     fraudReason: { type: String },
@@ -92,10 +121,10 @@ const orderSchema = new Schema<IOrder>(
       refundId: { type: String, required: true },
       amount: { type: Number, required: true },
       reason: { type: String, required: true },
-      status: { 
-        type: String, 
-        enum: ['pending', 'approved', 'rejected', 'processed'], 
-        default: 'pending' 
+      status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected', 'processed'],
+        default: 'pending'
       },
       processedAt: { type: Date },
       processedBy: { type: String },

@@ -69,22 +69,23 @@ const ProductCard = ({
       <p className='text-xs font-light text-primary/80 tracking-widest uppercase'>
         {product.brand}
       </p>
-      <Link
-        href={`/product/${product.slug}`}
-        className='block group'
+      <div
+        className='block group cursor-pointer'
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <h3 className='font-light text-sm leading-tight text-foreground/90 group-hover:text-primary transition-colors duration-700 line-clamp-2' 
-            style={{
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-            }}>
-          {product.name}
-        </h3>
-      </Link>
+        <Link href={`/product/${product.slug}`}>
+          <h3 className='font-light text-sm leading-tight text-foreground/90 group-hover:text-primary transition-colors duration-700 line-clamp-2' 
+              style={{
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}>
+            {product.name}
+          </h3>
+        </Link>
+      </div>
       <div className='flex items-center gap-2 justify-start'>
         <Rating rating={product.avgRating} size={4} />
         <span className='text-xs font-light text-foreground/50'>

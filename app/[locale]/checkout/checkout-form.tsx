@@ -40,27 +40,28 @@ import useCartStore from '@/hooks/use-cart-store'
 import useSettingStore from '@/hooks/use-setting-store'
 import ProductPrice from '@/components/shared/product/product-price'
 import CouponInput from '@/components/shared/checkout/coupon-input'
+import RazorpayPayment from '@/components/shared/payment/razorpay-payment'
 
 const shippingAddressDefaultValues =
   process.env.NODE_ENV === 'development'
     ? {
-        fullName: 'Basir',
-        street: '1911, 65 Sherbrooke Est',
-        city: 'Montreal',
-        province: 'Quebec',
-        phone: '4181234567',
-        postalCode: 'H2X 1C4',
-        country: 'Canada',
-      }
+      fullName: 'Basir',
+      street: '1911, 65 Sherbrooke Est',
+      city: 'Montreal',
+      province: 'Quebec',
+      phone: '4181234567',
+      postalCode: 'H2X 1C4',
+      country: 'Canada',
+    }
     : {
-        fullName: '',
-        street: '',
-        city: '',
-        province: '',
-        phone: '',
-        postalCode: '',
-        country: '',
-      }
+      fullName: '',
+      street: '',
+      city: '',
+      province: '',
+      phone: '',
+      postalCode: '',
+      country: '',
+    }
 
 const CheckoutForm = () => {
   const { toast } = useToast()
@@ -95,6 +96,8 @@ const CheckoutForm = () => {
   const isMounted = useIsMounted()
   const [couponDiscount, setCouponDiscount] = useState(0)
   const [couponCode, setCouponCode] = useState('')
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+  const [razorpayOrderId, setRazorpayOrderId] = useState('')
 
   const shippingAddressForm = useForm<ShippingAddress>({
     resolver: zodResolver(ShippingAddressSchema),
@@ -159,6 +162,75 @@ const CheckoutForm = () => {
     setIsAddressSelected(true)
     setIsPaymentMethodSelected(true)
   }
+
+  const handleRazorpayPayment = async () => {
+    if (paymentMethod === 'Razorpay') {
+      setIsProcessingPayment(true)
+      try {
+        // Create Razorpay order
+        const response = await fetch('/api/razorpay/create-order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: Math.max(0, (totalPrice || 0) - couponDiscount),
+            receipt: `order_${Date.now()}`,
+          }),
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to create payment order')
+        }
+
+        const { orderId } = await response.json()
+        setRazorpayOrderId(orderId)
+      } catch (error) {
+        toast({
+          description: 'Failed to initialize payment. Please try again.',
+          variant: 'destructive',
+        })
+        setIsProcessingPayment(false)
+      }
+    }
+  }
+
+  const handleRazorpaySuccess = async (paymentId: string) => {
+    try {
+      // Verify payment and create order
+      const response = await fetch('/api/razorpay/verify-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          paymentId,
+          orderId: razorpayOrderId,
+          amount: Math.max(0, (totalPrice || 0) - couponDiscount),
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Payment verification failed')
+      }
+
+      const result = await response.json()
+
+      toast({
+        description: 'Payment successful! Order placed.',
+        variant: 'default',
+      })
+      clearCart()
+      router.push(`/checkout/${result.orderId}`)
+    } catch (error) {
+      toast({
+        description: 'Payment verification failed. Please contact support.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsProcessingPayment(false)
+    }
+  }
   const handleSelectShippingAddress = () => {
     shippingAddressForm.handleSubmit(onSubmitShippingAddress)()
   }
@@ -208,9 +280,9 @@ const CheckoutForm = () => {
           </div>
         )}
 
-        <CouponInput 
-          onCouponApplied={handleCouponApplied} 
-          orderAmount={itemsPrice || 0} 
+        <CouponInput
+          onCouponApplied={handleCouponApplied}
+          orderAmount={itemsPrice || 0}
         />
       </CardContent>
     </Card>
@@ -620,7 +692,7 @@ const CheckoutForm = () => {
                                     </div>
                                     <div>
                                       {(dd.freeShippingMinPrice > 0 &&
-                                      itemsPrice >= dd.freeShippingMinPrice
+                                        itemsPrice >= dd.freeShippingMinPrice
                                         ? 0
                                         : dd.shippingPrice) === 0 ? (
                                         'FREE Shipping'
@@ -657,9 +729,27 @@ const CheckoutForm = () => {
 
               <Card className='hidden md:block '>
                 <CardContent className='p-4 flex flex-col md:flex-row justify-between items-center gap-3'>
-                  <Button onClick={handlePlaceOrder} className='rounded-full'>
-                    Place Your Order
-                  </Button>
+                  {paymentMethod === 'Razorpay' ? (
+                    <RazorpayPayment
+                      amount={Math.max(0, (totalPrice || 0) - couponDiscount)}
+                      orderId={razorpayOrderId}
+                      customerName={shippingAddress?.fullName || ''}
+                      customerEmail={(shippingAddress as any)?.email || ''}
+                      onSuccess={handleRazorpaySuccess}
+                      onFailure={(error) => {
+                        toast({
+                          description: error.message || 'Payment failed',
+                          variant: 'destructive',
+                        })
+                        setIsProcessingPayment(false)
+                      }}
+                      onClose={() => setIsProcessingPayment(false)}
+                    />
+                  ) : (
+                    <Button onClick={handlePlaceOrder} className='rounded-full' disabled={isProcessingPayment}>
+                      {isProcessingPayment ? 'Processing...' : 'Place Your Order'}
+                    </Button>
+                  )}
                   <div className='flex-1'>
                     <p className='font-bold text-lg'>
                       Order Total: <ProductPrice price={Math.max(0, (totalPrice || 0) - couponDiscount)} plain />
