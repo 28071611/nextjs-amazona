@@ -42,10 +42,12 @@ export const toSlug = (text: string): string =>
 
 
 export function formatCurrency(amount: number, currency: string = 'INR') {
+  const isINR = currency === 'INR'
   const formatter = new Intl.NumberFormat('en-IN', {
     currency,
     style: 'currency',
-    minimumFractionDigits: 2,
+    minimumFractionDigits: isINR ? 0 : 2,
+    maximumFractionDigits: isINR ? 0 : 2,
   })
   return formatter.format(amount)
 }

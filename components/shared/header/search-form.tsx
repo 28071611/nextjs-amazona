@@ -1,68 +1,136 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Input } from '@/components/ui/input'
 import VoiceSearch from './voice-search'
-import { SearchIcon } from 'lucide-react'
+import { SearchIcon, ChevronDown } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
-export default function SearchForm({ placeholder, categories, tHeaderAll }: {
-    placeholder: string,
-    categories: string[],
-    tHeaderAll: string
+export default function SearchForm({
+  placeholder,
+  categories,
+  tHeaderAll,
+}: {
+  placeholder: string
+  categories: string[]
+  tHeaderAll: string
 }) {
-    const [query, setQuery] = useState('')
-    const [category, setCategory] = useState('all')
-    const router = useRouter()
+  const [query, setQuery] = useState('')
+  const [category, setCategory] = useState('all')
+  const [isFocused, setIsFocused] = useState(false)
+  const router = useRouter()
+  const inputRef = useRef<HTMLInputElement>(null)
 
-    const handleVoiceResult = (text: string) => {
-        setQuery(text)
-        // Optionally auto-submit
-        router.push(`/search?q=${encodeURIComponent(text)}&category=${category}`)
+  const handleVoiceResult = (text: string) => {
+    setQuery(text)
+    router.push(`/search?q=${encodeURIComponent(text)}&category=${category}`)
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (query.trim()) {
+      router.push(`/search?q=${encodeURIComponent(query)}&category=${category}`)
     }
+  }
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-        router.push(`/search?q=${encodeURIComponent(query)}&category=${category}`)
-    }
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className={cn(
+        'flex items-center w-full max-w-2xl text-sm relative group transition-all duration-500',
+      )}
+    >
+      {/* Ambient glow effect */}
+      <div
+        className={cn(
+          'absolute -inset-1 rounded-full blur-xl transition-all duration-500 pointer-events-none',
+          isFocused
+            ? 'bg-primary/20 opacity-100'
+            : 'bg-primary/5 opacity-0 group-hover:opacity-60'
+        )}
+      />
 
-    return (
-        <form onSubmit={handleSubmit} className='flex items-center w-full max-w-2xl text-sm relative group'>
-            <div className="absolute inset-0 bg-primary/10 rounded-full blur-xl group-hover:bg-primary/20 transition-all duration-500 opacity-0 group-hover:opacity-100" />
+      {/* Main search wrapper */}
+      <div
+        className={cn(
+          'relative flex items-center w-full rounded-full overflow-hidden transition-all duration-300',
+          'border backdrop-blur-xl',
+          isFocused
+            ? 'border-primary/60 shadow-[0_0_0_1px_hsl(var(--primary)/0.3),0_8px_32px_hsl(var(--primary)/0.15)]'
+            : 'border-border/50 shadow-lg hover:border-primary/30',
+          'bg-card/60'
+        )}
+      >
+        {/* Category Dropdown */}
+        <div className='relative flex items-center border-r border-border/40 shrink-0'>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className={cn(
+              'h-12 bg-transparent appearance-none',
+              'pl-4 pr-7 text-xs uppercase tracking-widest font-medium',
+              'text-muted-foreground hover:text-primary cursor-pointer',
+              'outline-none border-none focus:ring-0 transition-colors duration-200',
+              'max-w-[120px]'
+            )}
+          >
+            <option value='all'>{tHeaderAll}</option>
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className='absolute right-2 w-3 h-3 text-muted-foreground pointer-events-none' />
+        </div>
 
-            <div className="relative flex items-center w-full bg-card/50 backdrop-blur-md rounded-full border border-border/60 hover:border-primary/50 transition-colors shadow-lg overflow-hidden">
-                <div className="relative border-r border-border/50">
-                    <select
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        className='h-12 bg-transparent text-muted-foreground border-none outline-none pl-4 pr-8 appearance-none cursor-pointer hover:text-primary transition-colors text-xs uppercase tracking-wide font-medium'
-                    >
-                        <option value='all'>{tHeaderAll}</option>
-                        {categories.map((c) => (
-                            <option key={c} value={c}>{c}</option>
-                        ))}
-                    </select>
-                </div>
+        {/* Search Input */}
+        <div className='flex-1 relative flex items-center h-12'>
+          <input
+            ref={inputRef}
+            type='text'
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            placeholder={placeholder}
+            className={cn(
+              'w-full h-full bg-transparent border-none outline-none ring-0',
+              'px-4 text-sm text-foreground',
+              'placeholder:text-muted-foreground/50 placeholder:font-light placeholder:tracking-wide',
+              'transition-all duration-300'
+            )}
+          />
 
-                <div className='flex-1 relative flex items-center h-12'>
-                    <Input
-                        className='w-full h-full border-none bg-transparent shadow-none focus-visible:ring-0 text-foreground placeholder:text-muted-foreground/50 px-4'
-                        placeholder={placeholder}
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                    />
-                    <div className='absolute right-2 top-1/2 -translate-y-1/2'>
-                        <VoiceSearch onResult={handleVoiceResult} />
-                    </div>
-                </div>
+          {/* Voice search */}
+          <div className='absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1'>
+            <VoiceSearch onResult={handleVoiceResult} />
+          </div>
+        </div>
 
-                <button
-                    type='submit'
-                    className='h-12 w-14 flex items-center justify-center bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground transition-all duration-300'
-                >
-                    <SearchIcon className='w-5 h-5' />
-                </button>
-            </div>
-        </form>
-    )
+        {/* Search Button */}
+        <button
+          type='submit'
+          className={cn(
+            'h-12 w-14 flex items-center justify-center flex-shrink-0',
+            'bg-primary/10 hover:bg-primary transition-all duration-300',
+            'text-primary hover:text-primary-foreground',
+            'group/btn relative overflow-hidden'
+          )}
+        >
+          {/* Button shimmer effect */}
+          <div className='absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700' />
+          <SearchIcon className='w-5 h-5 relative z-10' />
+        </button>
+      </div>
+
+      {/* Subtle bottom accent line */}
+      <div
+        className={cn(
+          'absolute bottom-0 left-1/2 -translate-x-1/2 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent transition-all duration-500',
+          isFocused ? 'w-3/4 opacity-100' : 'w-0 opacity-0'
+        )}
+      />
+    </form>
+  )
 }

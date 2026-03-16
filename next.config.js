@@ -37,6 +37,7 @@ const nextConfig = {
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     UPLOADTHING_SECRET: process.env.UPLOADTHING_SECRET,
     UPLOADTHING_APP_ID: process.env.UPLOADTHING_APP_ID,
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
   },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',

@@ -22,9 +22,8 @@ import StripeForm from './stripe-form'
 import { Elements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string
-)
+const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
+const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null
 export default function OrderDetailsForm({
   order,
   paypalClientId,
@@ -133,18 +132,25 @@ export default function OrderDetailsForm({
                 </PayPalScriptProvider>
               </div>
             )}
-            {!isPaid && paymentMethod === 'Stripe' && clientSecret && (
-              <Elements
-                options={{
-                  clientSecret,
-                }}
-                stripe={stripePromise}
-              >
-                <StripeForm
-                  priceInCents={Math.round(order.totalPrice * 100)}
-                  orderId={order._id}
-                />
-              </Elements>
+            {!isPaid && paymentMethod === 'Stripe' && (
+              clientSecret && stripePromise ? (
+                <Elements
+                  options={{
+                    clientSecret,
+                  }}
+                  stripe={stripePromise}
+                >
+                  <StripeForm
+                    priceInCents={Math.round(order.totalPrice * 100)}
+                    orderId={order._id}
+                  />
+                </Elements>
+              ) : (
+                <div className='p-4 border border-yellow-200 bg-yellow-50 rounded-md text-yellow-800 text-sm'>
+                  <p className='font-bold'>Stripe is not configured.</p>
+                  <p>Please add <code>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> to your environment variables to enable Stripe payments.</p>
+                </div>
+              )
             )}
 
             {!isPaid && paymentMethod === 'Cash On Delivery' && (

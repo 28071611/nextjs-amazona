@@ -28,7 +28,7 @@ const ProductPrice = ({
         <span className='text-sm align-super font-light text-primary/80'>
           {currency === 'INR' ? '₹' : currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '$'}
         </span>
-        {typeof convertedPrice === 'number' ? convertedPrice.toFixed(2) : convertedPrice}
+        {typeof convertedPrice === 'number' ? Math.round(convertedPrice).toLocaleString('en-IN') : convertedPrice}
       </span>
     </div>
   ) : isDeal ? (
@@ -46,7 +46,7 @@ const ProductPrice = ({
           <span className='text-sm align-super font-light text-red-600/80'>
             {currency === 'INR' ? '₹' : currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '$'}
           </span>
-          {typeof convertedPrice === 'number' ? convertedPrice.toFixed(2) : convertedPrice}
+          {typeof convertedPrice === 'number' ? Math.round(convertedPrice).toLocaleString('en-IN') : convertedPrice}
         </span>
       </div>
       <div className='text-xs font-light text-foreground/40 tracking-wide'>
@@ -66,7 +66,7 @@ const ProductPrice = ({
           <span className='text-sm align-super font-light text-primary/80'>
             {currency === 'INR' ? '₹' : currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '$'}
           </span>
-          {typeof convertedPrice === 'number' ? convertedPrice.toFixed(2) : convertedPrice}
+          {typeof convertedPrice === 'number' ? Math.round(convertedPrice).toLocaleString('en-IN') : convertedPrice}
         </div>
       </div>
       <div className='text-xs font-light text-foreground/40 tracking-wide'>
