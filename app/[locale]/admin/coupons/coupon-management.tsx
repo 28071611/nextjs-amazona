@@ -58,10 +58,6 @@ export default function CouponManagement() {
     },
   })
 
-  useEffect(() => {
-    loadCoupons()
-  }, [])
-
   const loadCoupons = async () => {
     try {
       const data = await getCoupons()
@@ -75,6 +71,9 @@ export default function CouponManagement() {
       setLoading(false)
     }
   }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { loadCoupons() }, [])
 
   const handleCreateCoupon = async (data: any) => {
     setIsCreating(true)
