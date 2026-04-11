@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: nextjs-amazona-backend
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.x
+      - key: MONGODB_URI
+        fromConfigVar: MONGODB_URI
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: NEXTAUTH_URL
+        sync: false
+      - key: NEXT_PUBLIC_SERVER_URL
+        sync: false
+      - key: NEXT_PUBLIC_APP_NAME
+        value: Amazona
+      - key: NEXT_PUBLIC_APP_DESCRIPTION
+        value: An Amazon clone built with Next.js, MongoDB, Shadcn

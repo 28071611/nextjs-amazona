@@ -13,7 +13,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "deploy:firebase": "firebase deploy",
+    "deploy:render": "echo 'Render automatically deploys on git push'"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.7.4",
