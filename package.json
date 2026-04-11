@@ -15,7 +15,8 @@
     "start": "next start",
     "lint": "next lint",
     "deploy:firebase": "firebase deploy",
-    "deploy:render": "echo 'Render automatically deploys on git push'"
+    "deploy:render": "echo 'Render automatically deploys on git push'",
+    "deploy:all": "npm run build && npm run deploy:firebase"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.7.4",

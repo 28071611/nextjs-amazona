@@ -291,14 +291,19 @@ export async function getProductsByTag({
   tag: string
   limit?: number
 }) {
-  await connectToDatabase()
-  const products = await Product.find({
-    tags: { $in: [tag] },
-    isPublished: true,
-  })
-    .sort({ createdAt: 'desc' })
-    .limit(limit)
-  return JSON.parse(JSON.stringify(products)) as IProduct[]
+  try {
+    await connectToDatabase()
+    const products = await Product.find({
+      tags: { $in: [tag] },
+      isPublished: true,
+    })
+      .sort({ createdAt: 'desc' })
+      .limit(limit)
+    return JSON.parse(JSON.stringify(products)) as IProduct[]
+  } catch (error) {
+    console.error('getProductsByTag error:', error)
+    return []
+  }
 }
 
 // GET ONE PRODUCT BY SLUG
@@ -366,100 +371,111 @@ export async function getAllProducts({
   minPrice?: number
   maxPrice?: number
 }) {
-  const {
-    common: { pageSize },
-  } = await getSetting()
-  limit = limit || pageSize
-  await connectToDatabase()
+  try {
+    const {
+      common: { pageSize },
+    } = await getSetting()
+    limit = limit || pageSize
+    await connectToDatabase()
 
-  let refinedQuery = query
-  let refinedCategory = category
-  let refinedBrand = ''
+    let refinedQuery = query
+    let refinedCategory = category
+    let refinedBrand = ''
 
-  if (query && query !== 'all' && query.split(' ').length > 1) {
-    const refinement = await refineSearchQuery(query)
-    if (refinement) {
-      refinedQuery = refinement.query || query
-      refinedCategory = refinement.category || category
-      refinedBrand = refinement.brand || ''
+    if (query && query !== 'all' && query.split(' ').length > 1) {
+      const refinement = await refineSearchQuery(query)
+      if (refinement) {
+        refinedQuery = refinement.query || query
+        refinedCategory = refinement.category || category
+        refinedBrand = refinement.brand || ''
+      }
     }
-  }
 
-  const queryFilter =
-    refinedQuery && refinedQuery !== 'all'
-      ? {
-        name: {
-          $regex: refinedQuery,
-          $options: 'i',
-        },
-      }
-      : {}
-  const categoryFilter = refinedCategory && refinedCategory !== 'all' ? { category: refinedCategory } : {}
-  const brandFilter = refinedBrand ? { brand: refinedBrand } : {}
-  const tagFilter = tag && tag !== 'all' ? { tags: tag } : {}
-
-  const ratingFilter =
-    rating && rating !== 'all'
-      ? {
-        avgRating: {
-          $gte: Number(rating),
-        },
-      }
-      : {}
-  const priceFilter =
-    price && price !== 'all'
-      ? {
-        price: {
-          $gte: Number(price.split('-')[0]),
-          $lte: Number(price.split('-')[1]),
-        },
-      }
-      : minPrice !== undefined || maxPrice !== undefined
+    const queryFilter =
+      refinedQuery && refinedQuery !== 'all'
         ? {
-          price: {
-            ...(minPrice !== undefined && { $gte: minPrice }),
-            ...(maxPrice !== undefined && { $lte: maxPrice }),
+          name: {
+            $regex: refinedQuery,
+            $options: 'i',
           },
         }
         : {}
-  const order: Record<string, 1 | -1> =
-    sort === 'best-selling'
-      ? { numSales: -1 }
-      : sort === 'price-low-to-high'
-        ? { price: 1 }
-        : sort === 'price-high-to-low'
-          ? { price: -1 }
-          : sort === 'avg-customer-review'
-            ? { avgRating: -1 }
-            : { _id: -1 }
-  const isPublished = { isPublished: true }
-  const limitValue = limit || 10
-  const products = await Product.find({
-    ...isPublished,
-    ...queryFilter,
-    ...tagFilter,
-    ...categoryFilter,
-    ...priceFilter,
-    ...ratingFilter,
-  })
-    .sort(order)
-    .skip(limitValue * (Number(page) - 1))
-    .limit(limitValue)
-    .lean()
+    const categoryFilter = refinedCategory && refinedCategory !== 'all' ? { category: refinedCategory } : {}
+    const brandFilter = refinedBrand ? { brand: refinedBrand } : {}
+    const tagFilter = tag && tag !== 'all' ? { tags: tag } : {}
 
-  const countProducts = await Product.countDocuments({
-    ...queryFilter,
-    ...tagFilter,
-    ...categoryFilter,
-    ...priceFilter,
-    ...ratingFilter,
-  })
-  return {
-    products: JSON.parse(JSON.stringify(products)) as IProduct[],
-    totalPages: Math.ceil(countProducts / limitValue),
-    totalProducts: countProducts,
-    from: limitValue * (Number(page) - 1) + 1,
-    to: limitValue * (Number(page) - 1) + products.length,
+    const ratingFilter =
+      rating && rating !== 'all'
+        ? {
+          avgRating: {
+            $gte: Number(rating),
+          },
+        }
+        : {}
+    const priceFilter =
+      price && price !== 'all'
+        ? {
+          price: {
+            $gte: Number(price.split('-')[0]),
+            $lte: Number(price.split('-')[1]),
+          },
+        }
+        : minPrice !== undefined || maxPrice !== undefined
+          ? {
+            price: {
+              ...(minPrice !== undefined && { $gte: minPrice }),
+              ...(maxPrice !== undefined && { $lte: maxPrice }),
+            },
+          }
+          : {}
+    const order: Record<string, 1 | -1> =
+      sort === 'best-selling'
+        ? { numSales: -1 }
+        : sort === 'price-low-to-high'
+          ? { price: 1 }
+          : sort === 'price-high-to-low'
+            ? { price: -1 }
+            : sort === 'avg-customer-review'
+              ? { avgRating: -1 }
+              : { _id: -1 }
+    const isPublished = { isPublished: true }
+    const limitValue = limit || 10
+    const products = await Product.find({
+      ...isPublished,
+      ...queryFilter,
+      ...tagFilter,
+      ...categoryFilter,
+      ...priceFilter,
+      ...ratingFilter,
+    })
+      .sort(order)
+      .skip(limitValue * (Number(page) - 1))
+      .limit(limitValue)
+      .lean()
+
+    const countProducts = await Product.countDocuments({
+      ...queryFilter,
+      ...tagFilter,
+      ...categoryFilter,
+      ...priceFilter,
+      ...ratingFilter,
+    })
+    return {
+      products: JSON.parse(JSON.stringify(products)) as IProduct[],
+      totalPages: Math.ceil(countProducts / limitValue),
+      totalProducts: countProducts,
+      from: limitValue * (Number(page) - 1) + 1,
+      to: limitValue * (Number(page) - 1) + products.length,
+    }
+  } catch (error) {
+    console.error('getAllProducts error:', error)
+    return {
+      products: [],
+      totalPages: 0,
+      totalProducts: 0,
+      from: 0,
+      to: 0,
+    }
   }
 }
 

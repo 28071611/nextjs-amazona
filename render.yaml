@@ -9,14 +9,16 @@ services:
       - key: NODE_VERSION
         value: 20.x
       - key: MONGODB_URI
-        fromConfigVar: MONGODB_URI
+        sync: false
       - key: AUTH_SECRET
         generateValue: true
       - key: NEXTAUTH_URL
-        sync: false
+        value: https://nextjs-a-free.web.app
       - key: NEXT_PUBLIC_SERVER_URL
-        sync: false
+        value: https://nextjs-a-free.web.app
       - key: NEXT_PUBLIC_APP_NAME
         value: Amazona
       - key: NEXT_PUBLIC_APP_DESCRIPTION
         value: An Amazon clone built with Next.js, MongoDB, Shadcn
+      - key: NODE_ENV
+        value: production
