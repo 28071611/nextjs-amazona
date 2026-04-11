@@ -9,7 +9,7 @@ services:
       - key: NODE_VERSION
         value: 20.x
       - key: MONGODB_URI
-        sync: false
+        value: mongodb+srv://dbuser:Harish2807@cluster0.wgghmay.mongodb.net/nextjs-amazona?retryWrites=true&w=majority&appName=Cluster0
       - key: AUTH_SECRET
         generateValue: true
       - key: NEXTAUTH_URL
