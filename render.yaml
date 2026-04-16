@@ -9,16 +9,42 @@ services:
       - key: NODE_VERSION
         value: 20.x
       - key: MONGODB_URI
-        value: mongodb+srv://dbuser:Harish2807@cluster0.wgghmay.mongodb.net/nextjs-amazona?retryWrites=true&w=majority&appName=Cluster0
-      - key: AUTH_SECRET
+        value: mongodb+srv://dbuser:Harish%2A2807@cluster0.wgghmay.mongodb.net/nextjs-amazona?retryWrites=true&w=majority&appName=Cluster0
+      # NextAuth v5 expects NEXTAUTH_SECRET
+      - key: NEXTAUTH_SECRET
         generateValue: true
       - key: NEXTAUTH_URL
-        value: https://nextjs-a-free.web.app
+        value: https://nextjs-amazona-backend.onrender.com
       - key: NEXT_PUBLIC_SERVER_URL
-        value: https://nextjs-a-free.web.app
+        value: https://nextjs-amazona-backend.onrender.com
       - key: NEXT_PUBLIC_APP_NAME
         value: Amazona
       - key: NEXT_PUBLIC_APP_DESCRIPTION
         value: An Amazon clone built with Next.js, MongoDB, Shadcn
+      # Required by `scripts/verify-project.ts` (set real values in Render)
+      - key: GOOGLE_CLIENT_ID
+        value: REPLACE_ME_GOOGLE_CLIENT_ID
+      - key: GOOGLE_CLIENT_SECRET
+        value: REPLACE_ME_GOOGLE_CLIENT_SECRET
+      - key: RAZORPAY_KEY_ID
+        value: REPLACE_ME_RAZORPAY_KEY_ID
+      - key: RAZORPAY_KEY_SECRET
+        value: REPLACE_ME_RAZORPAY_KEY_SECRET
+      - key: RESEND_API_KEY
+        value: REPLACE_ME_RESEND_API_KEY
+      - key: UPLOADTHING_SECRET
+        value: REPLACE_ME_UPLOADTHING_SECRET
+      - key: UPLOADTHING_APP_ID
+        value: REPLACE_ME_UPLOADTHING_APP_ID
+      # Client-side public env var used by Razorpay widget
+      - key: NEXT_PUBLIC_RAZORPAY_KEY_ID
+        value: REPLACE_ME_NEXT_PUBLIC_RAZORPAY_KEY_ID
+      # Stripe (used by checkout/payment routes)
+      - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        value: REPLACE_ME_STRIPE_PUBLISHABLE_KEY
+      - key: STRIPE_SECRET_KEY
+        value: REPLACE_ME_STRIPE_SECRET_KEY
+      - key: STRIPE_WEBHOOK_SECRET
+        value: REPLACE_ME_STRIPE_WEBHOOK_SECRET
       - key: NODE_ENV
         value: production
