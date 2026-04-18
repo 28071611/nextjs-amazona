@@ -7,7 +7,7 @@ const nextConfig = {
   serverExternalPackages: ['@prisma/client'],
   experimental: {
     serverActions: {
-      allowedOrigins: ['localhost:3000', 'localhost:3001', 'localhost:3002', 'localhost:3003', 'localhost:3004', '127.0.0.1:3000', '127.0.0.1:3001', '127.0.0.1:61963', '127.0.0.1:63804', 'nextjs-a-free.web.app', 'nextjs-amazona-backend.onrender.com'],
+      allowedOrigins: ['localhost:3000', 'localhost:3001', 'localhost:3002', 'localhost:3003', 'localhost:3004', '127.0.0.1:3000', '127.0.0.1:3001', '127.0.0.1:61963', '127.0.0.1:63804', 'nextjs-a-free.web.app', 'nextjs-amazona-main-harishpblr2007-8613s-projects.vercel.app'],
       bodySizeLimit: '10mb'
     }
   },
