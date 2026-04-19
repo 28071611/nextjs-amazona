@@ -12,6 +12,17 @@
         "destination": "https://nextjs-amazona-main-harishpblr2007-8613s-projects.vercel.app",
         "type": 301
       }
+    ],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      }
     ]
   }
 }
